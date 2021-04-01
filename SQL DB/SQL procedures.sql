@@ -7,6 +7,8 @@ BEGIN
 	if rdate < trunc(sysdate, 'YEAR') then
 		update READER_CARD set REWRITE_DATE = CURRENT_DATE where ID = CARD_ID;
 	end if;
+
+	commit;
 EXCEPTION
 WHEN OTHERS THEN
    raise_application_error(-20010,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
@@ -56,6 +58,8 @@ BEGIN
 	update HALL_STORAGE hs SET COUNT = COUNT - 1 where hs.HALL_ID = HALL_ID and hs.BOOK_ID = BOOK_ID;
 
 	rereg_reader(CARD_ID);
+
+	commit;
 EXCEPTION
 WHEN OTHERS THEN
    raise_application_error(-20010,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
@@ -92,6 +96,8 @@ BEGIN
 	update ACCEPTING_RETURNING_BOOKS arb set RETURN_DATE = CURRENT_DATE where arb.BOOK_ID = BOOK_ID and arb.HALL_ID = HALL_ID and arb.CARD_ID = CARD_ID and DATE_ACCEPTING <= CURRENT_DATE and DATE_MUST_RETURNING <= CURRENT_DATE and RETURN_DATE is NULL and LOST_BOOK = 0;
 
 	rereg_reader(CARD_ID);
+
+	commit;
 EXCEPTION
 WHEN OTHERS THEN
    raise_application_error(-20010,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
@@ -112,6 +118,8 @@ BEGIN
 	update VIOLATIONS v set IS_CLOSED = 1 where v.BOOK_ID = BOOK_ID and v.HALL_ID = HALL_ID and v.CARD_ID = CARD_ID and v.VIOLATION_DATE = VIOLATION_DATE;
 
 	rereg_reader(CARD_ID);
+
+	commit;
 EXCEPTION
 WHEN OTHERS THEN
    raise_application_error(-20010,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
@@ -128,6 +136,8 @@ BEGIN
    LOOP
       insert into VIOLATIONS values (rec.BOOK_ID, rec.CARD_ID, rec.HALL_ID, CURRENT_DATE, 'lateret', 1000, NULL, 0);
    END LOOP;
+
+   commit;
 EXCEPTION
 WHEN OTHERS THEN
    raise_application_error(-20010,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);

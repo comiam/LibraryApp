@@ -107,6 +107,14 @@ CREATE TABLE  "FACULTY"
 
 --------------------------------------------------------------------------------------
 
+CREATE TABLE  "DEPARTMENT" 
+   (	"ID_NAME" VARCHAR2(60) NOT NULL ENABLE, 
+	 CONSTRAINT "DEPARTMENT_UK1" UNIQUE ("ID_NAME") ENABLE
+   )
+/
+
+--------------------------------------------------------------------------------------
+
 CREATE TABLE  "GROUPS" 
    (	"ID_NAME" NUMBER NOT NULL ENABLE, 
 	 CONSTRAINT "GROUPS_UK1" UNIQUE ("ID_NAME") ENABLE
