@@ -36,7 +36,7 @@ BEGIN
 
 	select HALL_TYPE_ID into hallt from LIBRARY_HALLS where ID = HALL_ID;
 
-	if hallt = 'ma' then
+	if hallt = 'intercol' then
 		select count(*) into cnt from MA_ORDER mao where mao.BOOK_ID = BOOK_ID and mao.CARD_ID = CARD_ID and mao.ORDER_DATE <= CURRENT_DATE and CURRENT_DATE <= mao.RETURN_DATE and mao.TAKEN is NULL;
 
 		if cnt > 0 then
@@ -44,7 +44,7 @@ BEGIN
 		end if;
 
 		update MA_ORDER mao SET taken = CURRENT_DATE where BOOK_ID = mao.BOOK_ID and mao.CARD_ID = CARD_ID;
-	elsif hallt = 'a' then
+	elsif hallt = 'abonement' then
 		select CAN_TAKE_FOR_TIME into rules from READER_CARD rc, HUMAN h, READER_TYPE rt
                                 where CARD_ID = rc.ID and h.ID = rc.HUMAN_ID and h.TYPE_ID = rt.ID;
 
