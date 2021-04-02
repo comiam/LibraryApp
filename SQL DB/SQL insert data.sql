@@ -58,4 +58,27 @@ insert into HALL_TYPE values ('intercol');
 insert into HALL_TYPE values ('readhall');
 insert into HALL_TYPE values ('abonement');	
 
+--Physics
+insert into BOOKS values (0, 'You are joking, of course, Mr. Feynman!', 'Richard Feynman', to_date('1985', 'yyyy'));
+insert into BOOKS values (0, 'Feynman Lectures on Gravity', 'Richard Feynman', to_date('2000', 'yyyy'));
+insert into BOOKS values (0, 'Feynman Lectures on Physics', 'Richard Feynman', to_date('1967', 'yyyy'));
 
+--Math
+insert into BOOKS values (0, 'Collection of problems in linear algebra', 'Igor Vladimirovich Proscuryakov', to_date('2010', 'yyyy'));
+insert into BOOKS values (0, 'Collection of problems in mathematical analysis', 'Boris Pavlovich Demidovich', to_date('1995', 'yyyy'));
+insert into BOOKS values (0, 'Diff. geom. and Lie algebras and their app-s in field theory', 'Igor Pavlovich Volobuev', to_date('1998', 'yyyy'));
+
+--Chemistry
+insert into BOOKS values (0, 'Organic chemistry. All volumes', 'Traven Valery Fedorovich', to_date('2015', 'yyyy'));
+insert into BOOKS values (0, 'Physical chemistry course. All volumes', 'Yakov Ivanovich Gerasimov', to_date('1964', 'yyyy'));
+insert into BOOKS values (0, 'Quantum biochemistry for chemists and biologists', 'Yakov Ladik', to_date('1975', 'yyyy'));
+
+--Langs
+insert into BOOKS values (0, 'The word is alive and the word is dead', 'Nora Gal', to_date('1972', 'yyyy'));
+insert into BOOKS values (0, 'Theory of language. Introductory course', 'Boris Ustinovich Norman', to_date('2003', 'yyyy'));
+insert into BOOKS values (0, 'Introduction to the Formal Language of Linguistics', 'Yuri Konstantinovich Lekomtsev', to_date('1983', 'yyyy'));
+
+--Programming
+insert into BOOKS values (0, 'C++ for beginners', 'Herbert Schildt', to_date('2013', 'yyyy'));
+insert into BOOKS values (0, 'Java Philosophy', 'Eckel Bruce', to_date('2019', 'yyyy'));
+insert into BOOKS values (0, 'Modern operating systems', 'Andrew Tanenbaum', to_date('2015', 'yyyy'));
