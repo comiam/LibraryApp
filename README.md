@@ -4,4 +4,6 @@ A small application for keeping track of books and readers in the university lib
 ## Technologies
 In project used:
 * Oracle SQL Database 11g
-* JavaFX 11.0.2
+* JavaFX 1.8
+* JDBC for Oracle 11g
+* Lombok v1.18.20
