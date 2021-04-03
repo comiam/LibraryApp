@@ -14,6 +14,7 @@
 .idea/
 out/
 *.iml
+src/META-INF/
 
 # Package Files #
 *.jar
