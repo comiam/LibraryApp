@@ -38,7 +38,7 @@ public class EnterController
                 root.close();
 
                 Dialogs.showDefaultAlert(null, "Success!", "Welcome, " + log.trim() + "!", Alert.AlertType.INFORMATION);
-                WindowLoader.loadMainWindow();
+                WindowLoader.loadMainWindow(log.trim());
             }else
                 Dialogs.showDefaultAlert(root, "Error!", result, Alert.AlertType.ERROR);
         }

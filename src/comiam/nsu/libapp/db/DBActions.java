@@ -15,7 +15,7 @@ public class DBActions
         if(!res.getFirst().isEmpty() || res.getSecond() == null)
             return new Pair<>("Failed request! Try again!", null);
 
-        String[][] data = null;
+        String[][] data;
         try
         {
             val rs = res.getSecond();
@@ -29,13 +29,13 @@ public class DBActions
 
             val rsmd = rs.getMetaData();
             for (int i = 1; i <= columns; i++)
-                data[i - 1][0] = rsmd.getColumnName(i);
+                data[0][i - 1] = rsmd.getColumnName(i);
 
             int rowI = 1;
             while(rs.next())
             {
                 for(int i = 1; i <= columns; i++)
-                    data[i - 1][rowI] = rs.getString(i);
+                    data[rowI][i - 1] = rs.getString(i);
                 rowI++;
             }
 
@@ -53,7 +53,7 @@ public class DBActions
         if(!res.getFirst().isEmpty() || res.getSecond() == null)
             return new Pair<>("Failed request! Try again!", null);
 
-        String[] names = null;
+        String[] names;
         try
         {
             val rs = res.getSecond();
@@ -61,7 +61,7 @@ public class DBActions
             int rowCount = rs.last() ? rs.getRow() : 0;
             rs.beforeFirst();
 
-            names = new String[rowCount];
+            names = new String[rowCount - 1];//ignore internal tables, so decrement row size
 
             String n;
             int i = 0;
@@ -69,10 +69,11 @@ public class DBActions
             {
                 n = rs.getString(1);
 
-                if(!n.equals("HTMLDB_PLAN_TABLE"))//ignore internal tables
+                if(!n.equals("HTMLDB_PLAN_TABLE") && !n.isEmpty())//ignore internal tables
                     names[i++] = n;
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             return new Pair<>(e.getMessage(), null);
         }
 

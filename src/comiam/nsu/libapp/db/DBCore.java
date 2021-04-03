@@ -2,10 +2,7 @@ package comiam.nsu.libapp.db;
 
 import comiam.nsu.libapp.util.Pair;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 
 public class DBCore
 {
@@ -58,15 +55,14 @@ public class DBCore
     public static Pair<String, ResultSet> makeRequest(String request)
     {
         if(currentSession == null)
-            return new Pair<String, ResultSet>("Session not initialized!", null);
+            return new Pair<>("Session not initialized!", null);
         try
         {
-            PreparedStatement statement = currentSession.prepareStatement(request);
-
-            statement.execute();
+            Statement st = currentSession.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            st.execute(request);
             currentSession.commit();
 
-            return new Pair<String, ResultSet>("", statement.getResultSet());
+            return new Pair<>("", st.getResultSet());
         }catch(Throwable e)
         {
             try
@@ -74,7 +70,7 @@ public class DBCore
                 currentSession.rollback();
             }catch(Throwable ignored) {}
 
-            return new Pair<String, ResultSet>(e.getMessage(), null);
+            return new Pair<>(e.getMessage(), null);
         }
     }
 

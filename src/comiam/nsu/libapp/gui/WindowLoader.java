@@ -35,21 +35,21 @@ public class WindowLoader
         }
     }
 
-    public static void loadMainWindow()
+    public static void loadMainWindow(String name)
     {
         try
         {
             Stage newWindow = new Stage();
 
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(EnterController.class.getResource("EnterWindow.fxml"));
+            loader.setLocation(MainController.class.getResource("MainWindow.fxml"));
             Parent root = loader.load();
-            EnterController controller = loader.getController();
+            MainController controller = loader.getController();
             controller.setRoot(newWindow);
 
-            newWindow.setTitle("Hello");
+            newWindow.setTitle(name);
             newWindow.setResizable(false);
-            newWindow.setScene(new Scene(root, 203, 257));
+            newWindow.setScene(new Scene(root, 640, 501));
             newWindow.centerOnScreen();
             newWindow.show();
         }catch(Throwable e)
