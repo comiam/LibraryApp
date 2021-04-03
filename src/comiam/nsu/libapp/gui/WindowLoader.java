@@ -1,5 +1,6 @@
 package comiam.nsu.libapp.gui;
 
+import comiam.nsu.libapp.db.core.DBCore;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -35,6 +36,32 @@ public class WindowLoader
         }
     }
 
+    public static void loadEnterReaderOneWindow(MainController parent)
+    {
+        try
+        {
+            Stage newWindow = new Stage();
+
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(MainController.class.getResource("EnterReaderStepOne.fxml"));
+            Parent root = loader.load();
+            EnterReaderOneController controller = loader.getController();
+            controller.setRoot(newWindow);
+            controller.setController(parent);
+
+            newWindow.setTitle("Add new user");
+            newWindow.setResizable(false);
+            newWindow.setScene(new Scene(root, 303, 225));
+            newWindow.centerOnScreen();
+            newWindow.show();
+        }catch(Throwable e)
+        {
+            showExceptionDialog(null, e);
+            Platform.exit();
+            System.exit(1);
+        }
+    }
+
     public static void loadMainWindow(String name)
     {
         try
@@ -51,6 +78,12 @@ public class WindowLoader
             newWindow.setResizable(false);
             newWindow.setScene(new Scene(root, 640, 501));
             newWindow.centerOnScreen();
+
+            newWindow.setOnCloseRequest(e -> {
+                DBCore.closeCurrentSession();
+                Platform.exit();
+            });
+
             newWindow.show();
         }catch(Throwable e)
         {

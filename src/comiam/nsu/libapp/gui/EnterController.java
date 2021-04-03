@@ -1,7 +1,6 @@
 package comiam.nsu.libapp.gui;
 
-import comiam.nsu.libapp.db.DBCore;
-import javafx.application.Platform;
+import comiam.nsu.libapp.db.core.DBCore;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;

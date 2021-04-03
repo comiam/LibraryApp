@@ -1,4 +1,4 @@
-package comiam.nsu.libapp.db;
+package comiam.nsu.libapp.db.core;
 
 import comiam.nsu.libapp.util.Pair;
 

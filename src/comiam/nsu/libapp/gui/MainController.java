@@ -1,79 +1,140 @@
 package comiam.nsu.libapp.gui;
 
-import comiam.nsu.libapp.db.DBActions;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import comiam.nsu.libapp.db.core.DBActions;
+import comiam.nsu.libapp.db.objects.PersonCard;
+import comiam.nsu.libapp.util.GUIUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import lombok.Setter;
 import lombok.val;
-import lombok.var;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import static comiam.nsu.libapp.util.GUIUtils.*;
 
 public class MainController
 {
     @FXML
     private ChoiceBox<String> tables;
-
     @FXML
     private ScrollPane tablePanel;
-
     @FXML
-    private Button refresh;
+    private Button refreshTableData;
+    @FXML
+    private Button refreshTableCards;
+    @FXML
+    private Button editSelectedUser;
+    @FXML
+    private Button deleteSelectedUser;
+    @FXML
+    private Button addNewUser;
+    @FXML
+    private TableColumn<PersonCard, String> IDColumn;
+    @FXML
+    private TableColumn<PersonCard, String> firstNameColumn;
+    @FXML
+    private TableColumn<PersonCard, String> lastNameColumn;
+    @FXML
+    private TableColumn<PersonCard, String> patronymicColumn;
+    @FXML
+    private TableColumn<PersonCard, String> regDateColumn;
+    @FXML
+    private TableColumn<PersonCard, String> rewriteDateColumn;
+    @FXML
+    private TableColumn<PersonCard, String> typeColumn;
+    @FXML
+    private TableColumn<PersonCard, String> canTakeAwayColumn;
+    @FXML
+    private TableView<PersonCard> cardTable;
 
     @Setter
     private Stage root;
 
+    private String selectedTableName;
+
     @FXML
     public void initialize()
     {
-        refresh.setOnAction(e -> {
-            val data = DBActions.getTableNames();
+        refreshTableData.setOnAction(e -> {
+            val names = getTableNames(root);
 
-            if(!data.getFirst().isEmpty() || data.getSecond() == null)
+            if(names != null)
+                tables.setItems(names);
+
+            if(selectedTableName != null)
             {
-                Dialogs.showDefaultAlert(root, "Error!", "Can't refresh tables! Error: " + data.getFirst(), Alert.AlertType.ERROR);
-                return;
+                val table = getFreeSizeVariableTableFromRequest(root, selectedTableName);
+
+                if(table != null)
+                    tablePanel.setContent(table);
             }
-            val coll = FXCollections.observableArrayList(data.getSecond());
-            tables.setItems(coll);
         });
 
         tables.setOnAction(e -> {
             val tableName = tables.getValue();
-            val res = DBActions.getTableValues(tableName);
+            val table = getFreeSizeVariableTableFromRequest(root, tableName);
 
-            if(!res.getFirst().isEmpty() || res.getSecond() == null)
+            if(table != null)
             {
-                Dialogs.showDefaultAlert(root, "Error!", "Can't load table + " + tableName + " +! Error: " + res.getFirst(), Alert.AlertType.ERROR);
+                selectedTableName = tableName;
+                tablePanel.setContent(table);
+            }
+        });
+
+        IDColumn.setCellValueFactory(new PropertyValueFactory<>("ID"));
+        firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+        lastNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+        patronymicColumn.setCellValueFactory(new PropertyValueFactory<>("patronymic"));
+        regDateColumn.setCellValueFactory(new PropertyValueFactory<>("regDate"));
+        rewriteDateColumn.setCellValueFactory(new PropertyValueFactory<>("rewriteDate"));
+        typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
+        canTakeAwayColumn.setCellValueFactory(new PropertyValueFactory<>("canTakeAwayBook"));
+
+        refreshTableCards.setOnAction(e -> refresh());
+
+        deleteSelectedUser.setOnAction(e -> {
+            val user = cardTable.getSelectionModel().getSelectedItem();
+
+            if(user == null)
+            {
+                Dialogs.showDefaultAlert(root, "Error", "There is nothing to delete!", Alert.AlertType.ERROR);
                 return;
             }
 
-            val table = res.getSecond();
-            val tableView = new TableView<String[]>();
-            val columns = new ArrayList<TableColumn<String[], String>>();
-            for(int i = 0;i < table[0].length;i++)
+            val res = DBActions.deleteUserCard(user);
+
+            if(!res.isEmpty())
             {
-                final int I = i;
-                val col = new TableColumn<String[],String>(table[0][i]);
-                col.setCellValueFactory(p -> new ReadOnlyObjectWrapper(p.getValue()[I]));
+                Dialogs.showDefaultAlert(root, "Error!", res, Alert.AlertType.ERROR);
+                val data = GUIUtils.getCardRows(root);
 
-                columns.add(col);
+                if(data == null)
+                    return;
+
+                cardTable.setItems(data);
             }
-
-            var list = new ArrayList<String[]>(table);
-            list.remove(0);
-            ObservableList<String[]> data = FXCollections.observableArrayList(list);
-
-            tableView.getColumns().addAll(columns);
-            tableView.setItems(data);
-
-            tablePanel.setContent(tableView);
+            refresh();
         });
+
+        addNewUser.setOnAction(e -> {
+            WindowLoader.loadEnterReaderOneWindow(this);
+        });
+
+        val names = getTableNames(root);
+
+        if(names != null)
+            tables.setItems(names);
+
+        refresh();
+    }
+
+    public void refresh()
+    {
+        val data = GUIUtils.getCardRows(root);
+
+        if(data == null)
+            return;
+
+        cardTable.setItems(data);
     }
 }

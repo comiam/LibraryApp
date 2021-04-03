@@ -10,6 +10,8 @@
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -19,7 +21,7 @@
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
-        <Menu mnemonicParsing="false" text="Session">
+        <Menu mnemonicParsing="false" text="Сессия">
           <items>
             <MenuItem mnemonicParsing="false" text="New" />
             <MenuItem mnemonicParsing="false" text="Open…" />
@@ -35,7 +37,7 @@
             <MenuItem mnemonicParsing="false" text="Quit" />
           </items>
         </Menu>
-        <Menu mnemonicParsing="false" text="Help">
+        <Menu mnemonicParsing="false" text="Помощь">
           <items>
             <MenuItem mnemonicParsing="false" text="Undo" />
             <MenuItem mnemonicParsing="false" text="Redo" />
@@ -49,7 +51,7 @@
             <MenuItem mnemonicParsing="false" text="Unselect All" />
           </items>
         </Menu>
-        <Menu mnemonicParsing="false" text="About">
+        <Menu mnemonicParsing="false" text="О программе">
           <items>
             <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
           </items>
@@ -59,14 +61,63 @@
       <TabPane prefHeight="672.0" prefWidth="640.0" side="LEFT" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab text="СДАЧА/ПРИЁМ">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-            </content>
+               <content>
+                  <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                      <Tab text="Сдача книги">
+                        <content>
+                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                        </content>
+                      </Tab>
+                      <Tab text="Приём книги">
+                        <content>
+                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                        </content>
+                      </Tab>
+                    </tabs>
+                  </TabPane>
+               </content>
           </Tab>
           <Tab text="КАРТОЧКИ">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-            </content>
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <HBox minHeight="26.0" prefHeight="26.0" prefWidth="603.0">
+                           <children>
+                              <Label prefHeight="26.0" prefWidth="560.0" text="Карточки читателей библиотеки:">
+                                 <font>
+                                    <Font size="17.0" />
+                                 </font>
+                              </Label>
+                              <Button fx:id="refreshTableCards" mnemonicParsing="false" prefHeight="26.0" prefWidth="109.0" text="обновить" />
+                           </children>
+                        </HBox>
+                        <HBox prefHeight="26.0" prefWidth="603.0">
+                           <children>
+                              <Button fx:id="deleteSelectedUser" mnemonicParsing="false" text="Удалить выбранного читателя" />
+                              <Button fx:id="editSelectedUser" mnemonicParsing="false" text="Изменить выбранного читателя" />
+                              <Button fx:id="addNewUser" mnemonicParsing="false" text="Добавить нового читателя" />
+                           </children>
+                        </HBox>
+                        <ScrollPane hbarPolicy="NEVER" prefHeight="426.0" prefWidth="603.0">
+                           <content>
+                              <TableView fx:id="cardTable" prefHeight="421.0" prefWidth="591.0">
+                                <columns>
+                                    <TableColumn fx:id="IDColumn" prefWidth="32.0" text="ID" />
+                                  <TableColumn fx:id="firstNameColumn" prefWidth="74.0" text="Фамилия" />
+                                  <TableColumn fx:id="lastNameColumn" prefWidth="77.0" text="Имя" />
+                                    <TableColumn fx:id="patronymicColumn" prefWidth="83.0" text="Отчество" />
+                                    <TableColumn fx:id="regDateColumn" prefWidth="86.0" text="Дата регистрации" />
+                                    <TableColumn fx:id="rewriteDateColumn" prefWidth="77.0" text="Перезапись" />
+                                    <TableColumn fx:id="typeColumn" prefWidth="60.0" text="Тип" />
+                                    <TableColumn fx:id="canTakeAwayColumn" prefWidth="101.0" text="Право на вынос" />
+                                </columns>
+                              </TableView>
+                           </content>
+                        </ScrollPane>
+                     </children>
+                  </VBox>
+               </content>
           </Tab>
             <Tab text="ДОЛГИ">
                <content>
@@ -77,14 +128,14 @@
                <content>
                   <VBox prefHeight="200.0" prefWidth="100.0">
                      <children>
-                        <HBox minHeight="26.0" prefHeight="17.0" prefWidth="603.0">
+                        <HBox minHeight="26.0" prefHeight="26.0" prefWidth="603.0">
                            <children>
                               <Label prefHeight="26.0" prefWidth="560.0" text="Выберите таблицу для просмотра:">
                                  <font>
                                     <Font size="17.0" />
                                  </font>
                               </Label>
-                              <Button fx:id="refresh" mnemonicParsing="false" prefHeight="26.0" prefWidth="109.0" text="обновить" />
+                              <Button fx:id="refreshTableData" mnemonicParsing="false" prefHeight="26.0" prefWidth="109.0" text="обновить" />
                            </children>
                         </HBox>
                         <ChoiceBox fx:id="tables" minHeight="30.0" prefWidth="619.0" />
