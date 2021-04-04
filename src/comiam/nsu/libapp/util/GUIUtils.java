@@ -39,11 +39,21 @@ public class GUIUtils
         });
     }
 
+    public static boolean showError(Stage root, String message)
+    {
+        if(message != null && !message.isEmpty())
+        {
+            Dialogs.showDefaultAlert(root, "Error!", message, Alert.AlertType.ERROR);
+            return true;
+        }else
+            return false;
+    }
+
     public static ObservableList<String> getTypeNames(Stage root)
     {
         val data = DBActions.getTypeNames();
 
-        if(!data.getFirst().isEmpty() || data.getSecond() == null)
+        if(!data.getFirst().isEmpty() && data.getSecond() == null)
         {
             Dialogs.showDefaultAlert(root, "Error!", "Can't refresh tables! Error: " + data.getFirst(), Alert.AlertType.ERROR);
             return null;
@@ -55,7 +65,7 @@ public class GUIUtils
     {
         val data = DBActions.getTableNames();
 
-        if(!data.getFirst().isEmpty() || data.getSecond() == null)
+        if(!data.getFirst().isEmpty() && data.getSecond() == null)
         {
             Dialogs.showDefaultAlert(root, "Error!", "Can't refresh tables! Error: " + data.getFirst(), Alert.AlertType.ERROR);
             return null;
@@ -80,6 +90,11 @@ public class GUIUtils
             cards.add(new PersonCard(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]));
 
         return FXCollections.observableArrayList(cards);
+    }
+
+    public static ObservableList<String> toList(String[] vals)
+    {
+        return FXCollections.observableArrayList(vals);
     }
 
     public static TableView<String[]> getFreeSizeVariableTableFromRequest(Stage root, String tableName)

@@ -7,102 +7,135 @@ import lombok.var;
 
 import java.sql.SQLException;
 
+import static comiam.nsu.libapp.db.core.DBCore.*;
+
 public class DBActions
 {
-    public static String insertNewUser(String surname, String firstName, String patronymic, String type, String... data)
+    public static String createNewReader(String surname, String firstName, String patronymic, String typeName)
     {
-        var res = DBCore.makeRequest("insert into HUMAN values (0, '" + type + "', '" + surname + "', '"  + firstName + "', '" + patronymic + "')");
+        var res = makeRequest("select ID from READER_TYPE where NAME = '" + typeName + "'", false, false);
 
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return "Failed request!\nError: " + res.getFirst();
+        if(isBadResponse(res))
+            return "Can't create new user: " + res.getErrorMsg();
 
-        val human = getLastRecordFromTable("HUMAN", "ID");
-
-        if(human == null)
-            return "Fatal error during execution the request to library server! Try again!\n";
-
-        res = DBCore.makeRequest("insert into READER_CARD values (0, " + human[0] + ", CURRENT_DATE, CURRENT_DATE)");
-
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return "Failed request!\nError: " + res.getFirst();
-
-        val card = getLastRecordFromTable("READER_CARD", "ID");
-
-        if(card == null)
-            return "Fatal error during execution the request to library server! Try again!\n";
-
-
-        res = DBCore.makeRequest("insert into CARD_ACCOUNTING values (" + card[0] + ", CURRENT_DATE, 'create')");
-
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return "Failed request!\nError: " + res.getFirst();
-
-        /*if(!type.equals("abitura"))
+        int typeID = 0;
+        try
         {
-            //Some stuff
-        }*/
+            while(res.getSet().next())
+                typeID = Integer.parseInt(res.getSet().getString(1));
+        }catch (SQLException e) {
+            rollbackTransaction();
+            return "Can't create new user: " + e.getMessage();
+        } finally
+        {
+            res.closeAll();
+        }
+
+        res = makeInsertWithResult("insert into HUMAN values (0, " + typeID + ", '" + surname + "', '"  + firstName + "', '" + patronymic + "')", "ID");
+        if(isBadResponse(res))
+            return "Can't create new user: " + res.getErrorMsg();
+
+        var ID = "";
+        try
+        {
+            if(res.getSet().next())
+                ID = res.getSet().getString(1);
+        }catch (SQLException e) {
+            rollbackTransaction();
+            return "Can't create new user: " + e.getMessage();
+        } finally
+        {
+            res.closeAll();
+        }
+
+        res = makeInsertWithResult("insert into READER_CARD values (0, " + ID + ", CURRENT_DATE, CURRENT_DATE)", "ID");
+        if(isBadResponse(res))
+            return "Can't create new user: " + res.getErrorMsg();
+
+        ID = "";
+        try
+        {
+            if(res.getSet().next())
+                ID = res.getSet().getString(1);
+        }catch (SQLException e) {
+            rollbackTransaction();
+
+            return "Can't create new user: " + e.getMessage();
+        } finally
+        {
+            res.closeAll();
+        }
+
+        res = makeRequest("insert into CARD_ACCOUNTING values (" + ID + ", CURRENT_DATE, 'create')", true, true);
+        if(isBadResponse(res))
+            return "Can't create new user: " + res.getErrorMsg();
+
+        res.closeAll();
 
         return "";
     }
 
-    public static String[] getLastRecordFromTable(String name, String orderBy)
+    public static String deleteSelectedUser(PersonCard card)
     {
-        val res = DBCore.makeRequest("SELECT * FROM (\n" +
-                "SELECT * FROM " + name + " ORDER BY " + orderBy + " DESC\n" +
-                ") WHERE ROWNUM = 1");
+        var res = makeRequest("delete from READER_CARD where ID = " + card.getID() + " and HUMAN_ID = " + card.getHumanID(), false, true);
+        if(isBadResponse(res))
+            return "Can't delete user: " + res.getErrorMsg();
 
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return null;
+        res.closeAll();
+
+        res = makeRequest("delete from HUMAN where ID = " + card.getHumanID(), false, true);
+        if(isBadResponse(res))
+            return "Can't delete user: " + res.getErrorMsg();
+
+        res.closeAll();
+
+        res = makeRequest("insert into CARD_ACCOUNTING values (" + card.getID() + ", CURRENT_DATE, 'delete')", false, true);
+        if(isBadResponse(res))
+            return "Can't delete user: " + res.getErrorMsg();
+
+        res.closeAll();
+
+        val finalRes = commitTransaction();
+
+        return !finalRes.isEmpty() ? "Can't delete user: " + finalRes : "";
+    }
+
+    public static Pair<String, String[]> loadVariablesOfTable(String table)
+    {
+        var res = makeRequest("select ID from " + table, true, false);
+
+        if(isBadResponse(res))
+            return new Pair<>("Can't load data to form: " + res.getErrorMsg(), null);
 
         try
         {
-            val rs = res.getSecond();
-            int columns = rs.getMetaData().getColumnCount();
+            val vars = new String[res.getSet().getMetaData().getColumnCount()];
+            int i = 0;
+            while(res.getSet().next())
+                vars[i++] = res.getSet().getString(1);
 
-            val row = new String[columns];
-            while(rs.next())
-                for(int i = 1; i <= columns; i++)
-                    row[i - 1] = rs.getString(i);
-
-            return row;
+            return new Pair<>("", vars);
         }catch (SQLException e) {
-            return null;
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
         }
-    }
-
-    public static String deleteUserCard(PersonCard card)
-    {
-        var res = DBCore.makeRequest("delete from READER_CARD where ID = " + card.getID() + " and HUMAN_ID = " + card.getHumanID());
-
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return "Failed request!\nError: " + res.getFirst();
-
-        res = DBCore.makeRequest("delete from HUMAN where ID = " + card.getHumanID());
-
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return "Failed request!\nError: " + res.getFirst();
-
-        res = DBCore.makeRequest("insert into CARD_ACCOUNTING values (" + card.getID() + ", CURRENT_DATE, 'delete')");
-
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return "Failed request!\nError: " + res.getFirst();
-
-        return "";
     }
 
     public static Pair<String, String[][]> getTableOfCardData()
     {
-        val res = DBCore.makeRequest("select READER_CARD.ID, HUMAN_ID, SURNAME, FIRST_NAME, PATRONYMIC, REG_DATE, REWRITE_DATE, TYPE_ID, CAN_TAKE_FOR_TIME from READER_CARD " +
+        val res = makeRequest("select READER_CARD.ID, HUMAN_ID, SURNAME, FIRST_NAME, PATRONYMIC, REG_DATE, REWRITE_DATE, TYPE_ID, CAN_TAKE_FOR_TIME from READER_CARD " +
                 " inner join HUMAN H on H.ID = READER_CARD.HUMAN_ID" +
-                " inner join READER_TYPE RT on H.TYPE_ID = RT.ID");
+                " inner join READER_TYPE RT on H.TYPE_ID = RT.ID", true, false);
 
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return new Pair<>("Failed request! Try again!\nError: " + res.getFirst(), null);
+        if(isBadResponse(res))
+            return new Pair<>("Failed request! Try again!\nError: " + res.getErrorMsg(), null);
 
         String[][] data;
         try
         {
-            val rs = res.getSecond();
+            val rs = res.getSet();
 
             int rows = rs.last() ? rs.getRow() : 0;
             rs.beforeFirst();
@@ -119,6 +152,9 @@ public class DBActions
             }
         }catch (SQLException e) {
             return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
         }
 
         return new Pair<>("", data);
@@ -126,15 +162,15 @@ public class DBActions
 
     public static Pair<String, String[][]> getTableValues(String table)
     {
-        val res = DBCore.makeRequest("select * from " + table.trim());
+        val res = makeRequest("select * from " + table.trim(), true, false);
 
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return new Pair<>("Failed request! Try again!\nError: " + res.getFirst(), null);
+        if(isBadResponse(res))
+            return new Pair<>("Failed request! Try again!\nError: " + res.getErrorMsg(), null);
 
         String[][] data;
         try
         {
-            val rs = res.getSecond();
+            val rs = res.getSet();
 
             int rows = rs.last() ? rs.getRow() : 0;
             rs.beforeFirst();
@@ -157,6 +193,9 @@ public class DBActions
 
         }catch (SQLException e) {
             return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
         }
 
         return new Pair<>("", data);
@@ -164,28 +203,30 @@ public class DBActions
 
     public static Pair<String, String[]> getTypeNames()
     {
-        val res = DBCore.makeRequest("select ID, NAME from READER_TYPE");
+        val res = makeRequest("select NAME from READER_TYPE", true, false);
 
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return new Pair<>("Failed request! Try again!\nError: " + res.getFirst(), null);
+        if(isBadResponse(res))
+            return new Pair<>("Failed request! Try again!\nError: " + res.getErrorMsg(), null);
 
         String[] names;
         try
         {
-            val rs = res.getSecond();
+            val rs = res.getSet();
 
             int rowCount = rs.last() ? rs.getRow() : 0;
             rs.beforeFirst();
 
             names = new String[rowCount];
 
-            String n;
             int i = 0;
             while(rs.next())
-                names[i++] = rs.getString(1) + ": " + rs.getString(2);
+                names[i++] = rs.getString(1);
         } catch (SQLException e) {
             e.printStackTrace();
             return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
         }
 
         return new Pair<>("", names);
@@ -193,15 +234,15 @@ public class DBActions
 
     public static Pair<String, String[]> getTableNames()
     {
-        val res = DBCore.makeRequest("select table_name from user_tables");
+        val res = makeRequest("select table_name from user_tables", true, false);
 
-        if(!res.getFirst().isEmpty() && res.getSecond() == null)
-            return new Pair<>("Failed request! Try again!\nError: " + res.getFirst(), null);
+        if(isBadResponse(res))
+            return new Pair<>("Failed request! Try again!\nError: " + res.getErrorMsg(), null);
 
         String[] names;
         try
         {
-            val rs = res.getSecond();
+            val rs = res.getSet();
 
             int rowCount = rs.last() ? rs.getRow() : 0;
             rs.beforeFirst();
@@ -220,6 +261,9 @@ public class DBActions
         } catch (SQLException e) {
             e.printStackTrace();
             return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
         }
 
         return new Pair<>("", names);

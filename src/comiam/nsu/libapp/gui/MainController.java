@@ -59,7 +59,12 @@ public class MainController
             val names = getTableNames(root);
 
             if(names != null)
+            {
                 tables.setItems(names);
+
+                if(selectedTableName != null)
+                    tables.setValue(selectedTableName);
+            }
 
             if(selectedTableName != null)
             {
@@ -72,6 +77,9 @@ public class MainController
 
         tables.setOnAction(e -> {
             val tableName = tables.getValue();
+
+            if(tableName == null)
+                return;
             val table = getFreeSizeVariableTableFromRequest(root, tableName);
 
             if(table != null)
@@ -91,29 +99,19 @@ public class MainController
         canTakeAwayColumn.setCellValueFactory(new PropertyValueFactory<>("canTakeAwayBook"));
 
         refreshTableCards.setOnAction(e -> refresh());
-
         deleteSelectedUser.setOnAction(e -> {
             val user = cardTable.getSelectionModel().getSelectedItem();
 
             if(user == null)
             {
-                Dialogs.showDefaultAlert(root, "Error", "There is nothing to delete!", Alert.AlertType.ERROR);
+                showError(root, "There is nothing to delete!");
                 return;
             }
 
-            val res = DBActions.deleteUserCard(user);
+            val result = DBActions.deleteSelectedUser(user);
 
-            if(!res.isEmpty())
-            {
-                Dialogs.showDefaultAlert(root, "Error!", res, Alert.AlertType.ERROR);
-                val data = GUIUtils.getCardRows(root);
-
-                if(data == null)
-                    return;
-
-                cardTable.setItems(data);
-            }
-            refresh();
+            if(!showError(root, result))
+                refresh();
         });
 
         addNewUser.setOnAction(e -> {

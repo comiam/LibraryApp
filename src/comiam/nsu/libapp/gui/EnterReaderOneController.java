@@ -11,6 +11,9 @@ import javafx.stage.Stage;
 import lombok.Setter;
 import lombok.val;
 
+import static comiam.nsu.libapp.util.GUIUtils.showError;
+import static comiam.nsu.libapp.util.StringChecker.checkStrArgs;
+
 public class EnterReaderOneController
 {
     @FXML
@@ -32,35 +35,20 @@ public class EnterReaderOneController
     @FXML
     public void initialize()
     {
-
-
         continueBtn.setOnAction(e -> {
             val surn = surname.getText().trim();
             val firstn = firstName.getText().trim();
             val patr = patronymic.getText().trim();
             val selected = typesBox.getSelectionModel().getSelectedItem();
 
-            if(selected == null || surn.isEmpty() || firstn.isEmpty() || patr.isEmpty())
+            if(!checkStrArgs(surn, firstn, patr, selected))
             {
-                Dialogs.showDefaultAlert(root, "Error!", "One of fields is empty!", Alert.AlertType.ERROR);
+                showError(root, "One of fields is empty!");
                 return;
             }
 
-            if(!selected.split(":")[1].trim().equals("abitura"))
-            {
-                Dialogs.showDefaultAlert(root, "Error!", "Sorry, but this type not supported!", Alert.AlertType.ERROR);
-                return;
-            }
-
-            val ans = DBActions.insertNewUser(surn, firstn, patr, selected.split(":")[0].trim());
-            if(!ans.isEmpty())
-                Dialogs.showDefaultAlert(root, "Error!", ans, Alert.AlertType.ERROR);
-            else
-            {
-                Dialogs.showDefaultAlert(root, "Success!", "User " + surn + " " + firstn + " " + patr + " is created!", Alert.AlertType.INFORMATION);
+            if(!showError(root, DBActions.createNewReader(surn, firstn, patr, selected)))
                 controller.refresh();
-                root.close();
-            }
         });
 
         val types = GUIUtils.getTypeNames(root);
