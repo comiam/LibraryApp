@@ -3,7 +3,6 @@ package comiam.nsu.libapp.gui;
 import comiam.nsu.libapp.db.core.DBActions;
 import comiam.nsu.libapp.util.GUIUtils;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
@@ -47,8 +46,28 @@ public class EnterReaderOneController
                 return;
             }
 
-            if(!showError(root, DBActions.createNewReader(surn, firstn, patr, selected)))
+            val res = DBActions.createNewReader(surn, firstn, patr, selected);
+            if(!showError(root, res.getFirst()))
                 controller.refresh();
+
+            root.close();
+
+            switch (selected)
+            {
+                case "student":
+                    WindowLoader.loadStudentFormWindow(res.getSecond());
+                    break;
+                case "teacher":
+                    WindowLoader.loadTeacherFormWindow(res.getSecond());
+                    break;
+                case "spo":
+                    WindowLoader.loadSPOFormWindow(res.getSecond());
+                    break;
+                case "assistant":
+                    WindowLoader.loadAssistantFormWindow(res.getSecond());
+                default:
+                    break;
+            }
         });
 
         val types = GUIUtils.getTypeNames(root);

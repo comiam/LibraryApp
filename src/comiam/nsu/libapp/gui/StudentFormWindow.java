@@ -1,7 +1,6 @@
 package comiam.nsu.libapp.gui;
 
 import comiam.nsu.libapp.db.core.DBActions;
-import comiam.nsu.libapp.db.core.DBCore;
 import comiam.nsu.libapp.util.GUIUtils;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -9,25 +8,28 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import lombok.Setter;
 import lombok.val;
+
+import static comiam.nsu.libapp.util.GUIUtils.showError;
+import static comiam.nsu.libapp.util.StringChecker.checkStrArgs;
 
 public class StudentFormWindow
 {
     @FXML
     private ChoiceBox<String> faculty;
-
     @FXML
     private ChoiceBox<String> group;
-
     @FXML
     private TextField course;
-
     @FXML
     private Button save;
 
     @Setter
     String humanID;
+    @Setter
+    Stage root;
 
     @FXML
     private void initialize()
@@ -35,7 +37,7 @@ public class StudentFormWindow
         val fac = DBActions.loadVariablesOfTable("FACULTY");
         val groups = DBActions.loadVariablesOfTable("GROUPS");
 
-        if(!fac.getFirst().isEmpty() || !groups.getFirst().isEmpty())
+        if(checkStrArgs(fac.getFirst(), groups.getFirst()))
             Dialogs.showDefaultAlert(null, "Error!", fac.getFirst() + "\n" + groups.getFirst(), Alert.AlertType.ERROR);
         else
         {
@@ -66,13 +68,17 @@ public class StudentFormWindow
             val gr = group.getSelectionModel().getSelectedItem();
             val course0 = course.getText().trim();
 
-            if(fac0 == null || gr == null || course0.isEmpty())
+            if(!checkStrArgs(fac0, gr, course0))
             {
-                Dialogs.showDefaultAlert(null, "Error!", "Some fields are empty!", Alert.AlertType.ERROR);
+                showError(root, "Some fields are empty!");
                 return;
             }
 
-
+            if(!showError(root, DBActions.createNewStudent(humanID, fac0, gr, course0)))
+            {
+                Dialogs.showDefaultAlert(root, "Success!", "Student created successfully!", Alert.AlertType.INFORMATION);
+                root.close();
+            }
         });
 
     }

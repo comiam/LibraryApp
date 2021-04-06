@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import lombok.Setter;
 import lombok.val;
@@ -19,6 +20,23 @@ public class EnterController
 
     @Setter
     private Stage root;
+
+    @FXML
+    public void initialize()
+    {
+        login.setText("18209_bolshim");
+        password.setText("sefsefgth");//can access this shit
+
+        login.setOnKeyReleased(e -> {
+            if(e.getCode() == KeyCode.ENTER)
+                login();
+        });
+        password.setOnKeyTyped(e -> {
+            if(e.getCode() == KeyCode.ENTER)
+                login();
+        });
+        login.requestFocus();
+    }
 
     @FXML
     private void login()

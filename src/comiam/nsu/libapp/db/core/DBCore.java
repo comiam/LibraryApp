@@ -89,7 +89,6 @@ public class DBCore
             return new Response("", st.getGeneratedKeys(), st);
         }catch(Throwable e)
         {
-            e.printStackTrace();
             rollbackTransaction();
 
             return new Response(e.getMessage(), null, null);

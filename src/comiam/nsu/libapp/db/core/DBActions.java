@@ -11,12 +11,42 @@ import static comiam.nsu.libapp.db.core.DBCore.*;
 
 public class DBActions
 {
-    public static String createNewReader(String surname, String firstName, String patronymic, String typeName)
+    public static String createNewAssistant(String humanID, String sub0)
+    {
+        var res = makeRequest("insert into ASSISTANT values (" + humanID + ", '" + sub0 + "')", true, true);
+        res.closeAll();
+        return isBadResponse(res) ? "Can't create new assistant: " + res.getErrorMsg() : "";
+    }
+
+    public static String createNewSPO(String humanID, String sub0)
+    {
+        var res = makeRequest("insert into SPO values (" + humanID + ", '" + sub0 + "')", true, true);
+        res.closeAll();
+        return isBadResponse(res) ? "Can't create new spo: " + res.getErrorMsg() : "";
+    }
+
+    public static String createNewTeacher(String humanID, String grade, String post, String sub0, String sub1)
+    {
+        var res = makeRequest("insert into TEACHERS values (" + humanID + ", '" + grade + "', '" + post + "', " +
+                  (sub0 == null ? "NULL" : "'" + sub0 + "'") + ", "
+                + (sub1 == null ? "NULL" : "'" + sub1 + "'") + ")", true, true);
+        res.closeAll();
+        return isBadResponse(res) ? "Can't create new teacher: " + res.getErrorMsg() : "";
+    }
+
+    public static String createNewStudent(String humanID, String fac, String group, String cource)
+    {
+        var res = makeRequest("insert into STUDENTS values (" + humanID + ", " + group + ", '" + fac + "', " + cource + ")", true, true);
+        res.closeAll();
+        return isBadResponse(res) ? "Can't create new student: " + res.getErrorMsg() : "";
+    }
+
+    public static Pair<String, String> createNewReader(String surname, String firstName, String patronymic, String typeName)
     {
         var res = makeRequest("select ID from READER_TYPE where NAME = '" + typeName + "'", false, false);
 
         if(isBadResponse(res))
-            return "Can't create new user: " + res.getErrorMsg();
+            return new Pair<>("Can't create new user: " + res.getErrorMsg(), "");
 
         int typeID = 0;
         try
@@ -25,7 +55,7 @@ public class DBActions
                 typeID = Integer.parseInt(res.getSet().getString(1));
         }catch (SQLException e) {
             rollbackTransaction();
-            return "Can't create new user: " + e.getMessage();
+            return new Pair<>("Can't create new user: " + e.getMessage(), "");
         } finally
         {
             res.closeAll();
@@ -33,7 +63,7 @@ public class DBActions
 
         res = makeInsertWithResult("insert into HUMAN values (0, " + typeID + ", '" + surname + "', '"  + firstName + "', '" + patronymic + "')", "ID");
         if(isBadResponse(res))
-            return "Can't create new user: " + res.getErrorMsg();
+            return new Pair<>("Can't create new user: " + res.getErrorMsg(), "");
 
         var ID = "";
         try
@@ -42,7 +72,7 @@ public class DBActions
                 ID = res.getSet().getString(1);
         }catch (SQLException e) {
             rollbackTransaction();
-            return "Can't create new user: " + e.getMessage();
+            return new Pair<>("Can't create new user: " + e.getMessage(), "");
         } finally
         {
             res.closeAll();
@@ -50,8 +80,9 @@ public class DBActions
 
         res = makeInsertWithResult("insert into READER_CARD values (0, " + ID + ", CURRENT_DATE, CURRENT_DATE)", "ID");
         if(isBadResponse(res))
-            return "Can't create new user: " + res.getErrorMsg();
+            return new Pair<>("Can't create new user: " + res.getErrorMsg(), "");
 
+        val humanID = ID;
         ID = "";
         try
         {
@@ -59,8 +90,7 @@ public class DBActions
                 ID = res.getSet().getString(1);
         }catch (SQLException e) {
             rollbackTransaction();
-
-            return "Can't create new user: " + e.getMessage();
+            return new Pair<>("Can't create new user: " + e.getMessage(), "");
         } finally
         {
             res.closeAll();
@@ -68,11 +98,11 @@ public class DBActions
 
         res = makeRequest("insert into CARD_ACCOUNTING values (" + ID + ", CURRENT_DATE, 'create')", true, true);
         if(isBadResponse(res))
-            return "Can't create new user: " + res.getErrorMsg();
+            return new Pair<>("Can't create new user: " + res.getErrorMsg(), "");
 
         res.closeAll();
 
-        return "";
+        return new Pair<>("", humanID);
     }
 
     public static String deleteSelectedUser(PersonCard card)
@@ -102,14 +132,17 @@ public class DBActions
 
     public static Pair<String, String[]> loadVariablesOfTable(String table)
     {
-        var res = makeRequest("select ID from " + table, true, false);
+        var res = makeRequest("select ID_NAME from " + table, true, false);
 
         if(isBadResponse(res))
             return new Pair<>("Can't load data to form: " + res.getErrorMsg(), null);
 
         try
         {
-            val vars = new String[res.getSet().getMetaData().getColumnCount()];
+            int rows = res.getSet().last() ? res.getSet().getRow() : 0;
+            res.getSet().beforeFirst();
+
+            val vars = new String[rows];
             int i = 0;
             while(res.getSet().next())
                 vars[i++] = res.getSet().getString(1);
@@ -125,7 +158,7 @@ public class DBActions
 
     public static Pair<String, String[][]> getTableOfCardData()
     {
-        val res = makeRequest("select READER_CARD.ID, HUMAN_ID, SURNAME, FIRST_NAME, PATRONYMIC, REG_DATE, REWRITE_DATE, TYPE_ID, CAN_TAKE_FOR_TIME from READER_CARD " +
+        val res = makeRequest("select READER_CARD.ID, HUMAN_ID, SURNAME, FIRST_NAME, PATRONYMIC, REG_DATE, REWRITE_DATE, RT.NAME, CAN_TAKE_FOR_TIME from READER_CARD " +
                 " inner join HUMAN H on H.ID = READER_CARD.HUMAN_ID" +
                 " inner join READER_TYPE RT on H.TYPE_ID = RT.ID", true, false);
 
