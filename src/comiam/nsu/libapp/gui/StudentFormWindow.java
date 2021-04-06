@@ -38,8 +38,10 @@ public class StudentFormWindow
         val groups = DBActions.loadVariablesOfTable("GROUPS");
 
         if(checkStrArgs(fac.getFirst(), groups.getFirst()))
-            Dialogs.showDefaultAlert(null, "Error!", fac.getFirst() + "\n" + groups.getFirst(), Alert.AlertType.ERROR);
-        else
+        {
+            Dialogs.showDefaultAlert(root, "Error!", fac.getFirst() + "\n" + groups.getFirst(), Alert.AlertType.ERROR);
+            root.close();
+        } else
         {
             faculty.setItems(GUIUtils.toList(fac.getSecond()));
             group.setItems(GUIUtils.toList(groups.getSecond()));
@@ -62,7 +64,27 @@ public class StudentFormWindow
                     group.setItems(FXCollections.observableArrayList(fac0.getSecond()));
             }
         });
+    }
 
+    public void setIsEditingUser(boolean isEditingUser)
+    {
+        boolean isEmptyData = false;
+        if(isEditingUser)
+        {
+            val res = DBActions.getRowInfoFrom(humanID, "HUMAN_ID", "STUDENTS");
+
+            isEmptyData = res.getFirst().equals("empty");
+            if(!isEmptyData && showError(root, res.getFirst()))
+                root.close();
+            else
+            {
+                group.setValue(res.getSecond()[1]);
+                faculty.setValue(res.getSecond()[2]);
+                course.setText(res.getSecond()[3]);
+            }
+        }
+
+        boolean finalIsEmptyData = isEmptyData;
         save.setOnAction(e -> {
             val fac0 = faculty.getSelectionModel().getSelectedItem();
             val gr = group.getSelectionModel().getSelectedItem();
@@ -74,12 +96,21 @@ public class StudentFormWindow
                 return;
             }
 
-            if(!showError(root, DBActions.createNewStudent(humanID, fac0, gr, course0)))
+            if(!isEditingUser)
             {
-                Dialogs.showDefaultAlert(root, "Success!", "Student created successfully!", Alert.AlertType.INFORMATION);
-                root.close();
+                if(!showError(root, DBActions.createNewStudent(humanID, fac0, gr, course0)))
+                {
+                    Dialogs.showDefaultAlert(root, "Success!", "Student created successfully!", Alert.AlertType.INFORMATION);
+                    root.close();
+                }
+            }else
+            {
+                if(!showError(root, DBActions.updateStudent(humanID, fac0, gr, course0, finalIsEmptyData)))
+                {
+                    Dialogs.showDefaultAlert(root, "Success!", "Student updated successfully!", Alert.AlertType.INFORMATION);
+                    root.close();
+                }
             }
         });
-
     }
 }

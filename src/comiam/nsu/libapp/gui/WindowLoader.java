@@ -36,7 +36,7 @@ public class WindowLoader
         }
     }
 
-    public static void loadAssistantFormWindow(String humanID)
+    public static void loadAssistantFormWindow(String humanID, boolean updateUser)
     {
         try
         {
@@ -55,6 +55,8 @@ public class WindowLoader
             newWindow.setScene(new Scene(root, 303, 87));
             newWindow.centerOnScreen();
             newWindow.show();
+
+            controller.setIsEditingUser(updateUser);
         }catch(Throwable e)
         {
             showExceptionDialog(null, e);
@@ -63,7 +65,7 @@ public class WindowLoader
         }
     }
 
-    public static void loadSPOFormWindow(String humanID)
+    public static void loadSPOFormWindow(String humanID, boolean updateUser)
     {
         try
         {
@@ -82,6 +84,8 @@ public class WindowLoader
             newWindow.setScene(new Scene(root, 303, 87));
             newWindow.centerOnScreen();
             newWindow.show();
+
+            controller.setIsEditingUser(updateUser);
         }catch(Throwable e)
         {
             showExceptionDialog(null, e);
@@ -90,7 +94,7 @@ public class WindowLoader
         }
     }
 
-    public static void loadStudentFormWindow(String humanID)
+    public static void loadStudentFormWindow(String humanID, boolean updateUser)
     {
         try
         {
@@ -109,6 +113,8 @@ public class WindowLoader
             newWindow.setScene(new Scene(root, 303, 225));
             newWindow.centerOnScreen();
             newWindow.show();
+
+            controller.setIsEditingUser(updateUser);
         }catch(Throwable e)
         {
             showExceptionDialog(null, e);
@@ -117,7 +123,7 @@ public class WindowLoader
         }
     }
 
-    public static void loadTeacherFormWindow(String humanID)
+    public static void loadTeacherFormWindow(String humanID, boolean updateUser)
     {
         try
         {
@@ -136,6 +142,8 @@ public class WindowLoader
             newWindow.setScene(new Scene(root, 303, 239));
             newWindow.centerOnScreen();
             newWindow.show();
+
+            controller.setIsEditingUser(updateUser);
         }catch(Throwable e)
         {
             showExceptionDialog(null, e);
@@ -144,7 +152,7 @@ public class WindowLoader
         }
     }
 
-    public static void loadEnterReaderOneWindow(MainController parent)
+    public static void loadEnterReaderOneWindow(MainController parent, boolean toEdit, String... data)
     {
         try
         {
@@ -162,6 +170,13 @@ public class WindowLoader
             newWindow.setScene(new Scene(root, 303, 225));
             newWindow.centerOnScreen();
             newWindow.show();
+
+            if(toEdit)
+            {
+                controller.setHumanID(data[0]);
+                controller.setType(data[1]);
+            }
+            controller.setIsEditingUser(toEdit);
         }catch(Throwable e)
         {
             showExceptionDialog(null, e);

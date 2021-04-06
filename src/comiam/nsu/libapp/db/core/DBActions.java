@@ -11,6 +11,34 @@ import static comiam.nsu.libapp.db.core.DBCore.*;
 
 public class DBActions
 {
+    public static Pair<String, String[]> getRowInfoFrom(String comparableValue, String compareColumn, String table)
+    {
+        var res = makeRequest("select * from " + table + " where " + compareColumn + " = " + comparableValue, true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Can't extract row from table: " + res.getErrorMsg(), null);
+
+        try
+        {
+            val rs = res.getSet();
+            val data = new String[rs.getMetaData().getColumnCount()];
+
+            boolean empty = true;
+            while(rs.next())
+            {
+                empty = false;
+                for(int i = 1; i <= data.length; i++)
+                    data[i - 1] = rs.getString(i);
+            }
+
+            return new Pair<>(empty ? "empty" : "", data);
+        }catch (SQLException e) {
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
+        }
+    }
+
     public static String createNewAssistant(String humanID, String sub0)
     {
         var res = makeRequest("insert into ASSISTANT values (" + humanID + ", '" + sub0 + "')", true, true);
@@ -18,11 +46,35 @@ public class DBActions
         return isBadResponse(res) ? "Can't create new assistant: " + res.getErrorMsg() : "";
     }
 
+    public static String updateAssistant(String humanID, String sub0, boolean isNewData)
+    {
+        if(isNewData)
+            return createNewAssistant(humanID, sub0);
+        else
+        {
+            var res = makeRequest("update ASSISTANT set SUBJECT_ID = '" + sub0 + "' where HUMAN_ID = " + humanID, true, true);
+            res.closeAll();
+            return isBadResponse(res) ? "Can't update Assistant: " + res.getErrorMsg() : "";
+        }
+    }
+
     public static String createNewSPO(String humanID, String sub0)
     {
         var res = makeRequest("insert into SPO values (" + humanID + ", '" + sub0 + "')", true, true);
         res.closeAll();
         return isBadResponse(res) ? "Can't create new spo: " + res.getErrorMsg() : "";
+    }
+
+    public static String updateSPO(String humanID, String sub0, boolean isNewData)
+    {
+        if(isNewData)
+            return createNewSPO(humanID, sub0);
+        else
+        {
+            var res = makeRequest("update SPO set SUBJECT_ID = '" + sub0 + "' where HUMAN_ID = " + humanID, true, true);
+            res.closeAll();
+            return isBadResponse(res) ? "Can't update SPO: " + res.getErrorMsg() : "";
+        }
     }
 
     public static String createNewTeacher(String humanID, String grade, String post, String sub0, String sub1)
@@ -34,11 +86,63 @@ public class DBActions
         return isBadResponse(res) ? "Can't create new teacher: " + res.getErrorMsg() : "";
     }
 
+    public static String updateTeacher(String humanID, String grade, String post, String sub0, String sub1, boolean isNewData)
+    {
+        if(isNewData)
+            return createNewTeacher(humanID, grade, post, sub0, sub1);
+        else
+        {
+            var res = makeRequest("update TEACHERS set GRADE_ID = '" + grade + "', POST_ID = '" + post +
+                    "', SUBJECT_ID = '" + sub0 + "', SUBJECT2_ID = '" + sub1 + "' where HUMAN_ID = " + humanID, true, true);
+            res.closeAll();
+            return isBadResponse(res) ? "Can't update teacher: " + res.getErrorMsg() : "";
+        }
+    }
+
     public static String createNewStudent(String humanID, String fac, String group, String cource)
     {
         var res = makeRequest("insert into STUDENTS values (" + humanID + ", " + group + ", '" + fac + "', " + cource + ")", true, true);
         res.closeAll();
         return isBadResponse(res) ? "Can't create new student: " + res.getErrorMsg() : "";
+    }
+
+    public static String updateStudent(String humanID, String fac, String group, String cource, boolean isNewData)
+    {
+        if(isNewData)
+            return createNewStudent(humanID, fac, group, cource);
+        else
+        {
+            var res = makeRequest("update STUDENTS set GROUP_ID = " + group + ", FACULTY_ID = '" + fac +
+                    "', COURCE = " + cource + " where HUMAN_ID = " + humanID, true, true);
+            res.closeAll();
+            return isBadResponse(res) ? "Can't update student: " + res.getErrorMsg() : "";
+        }
+    }
+
+    public static String updateHuman(String ID, String surname, String firstName, String patronymic, String typeName)
+    {
+        var res = makeRequest("select ID from READER_TYPE where NAME = '" + typeName + "'", false, false);
+
+        if(isBadResponse(res))
+            return "Can't create new user: " + res.getErrorMsg();
+
+        int typeID = 0;
+        try
+        {
+            while(res.getSet().next())
+                typeID = Integer.parseInt(res.getSet().getString(1));
+        }catch (SQLException e) {
+            rollbackTransaction();
+            return "Can't create new user: " + e.getMessage();
+        } finally
+        {
+            res.closeAll();
+        }
+
+        res = makeRequest("update HUMAN set TYPE_ID = " + typeID + ", SURNAME = '" + surname + "', FIRST_NAME = '" + firstName +
+                "', PATRONYMIC = '" + patronymic + "' where ID = " + ID, true, true);
+        res.closeAll();
+        return isBadResponse(res) ? "Can't update user data: " + res.getErrorMsg() : "";
     }
 
     public static Pair<String, String> createNewReader(String surname, String firstName, String patronymic, String typeName)

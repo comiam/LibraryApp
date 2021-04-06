@@ -114,8 +114,17 @@ public class MainController
                 refresh();
         });
 
-        addNewUser.setOnAction(e -> {
-            WindowLoader.loadEnterReaderOneWindow(this);
+        addNewUser.setOnAction(e -> WindowLoader.loadEnterReaderOneWindow(this, false));
+
+        editSelectedUser.setOnAction(e -> {
+            val user = cardTable.getSelectionModel().getSelectedItem();
+
+            if(user == null)
+            {
+                showError(root, "There is nothing to delete!");
+                return;
+            }
+            WindowLoader.loadEnterReaderOneWindow(this, true, user.getHumanID(), user.getType());
         });
 
         val names = getTableNames(root);

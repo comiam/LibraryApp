@@ -44,7 +44,23 @@ public class SPOFormWindow
                     sub0.setItems(FXCollections.observableArrayList(fac0.getSecond()));
             }
         });
+    }
 
+    public void setIsEditingUser(boolean isEditingUser)
+    {
+        boolean isEmptyData = false;
+        if(isEditingUser)
+        {
+            val res = DBActions.getRowInfoFrom(humanID, "HUMAN_ID", "SPO");
+
+            isEmptyData = res.getFirst().equals("empty");
+            if(!isEmptyData && showError(root, res.getFirst()))
+                root.close();
+            else
+                sub0.setValue(res.getSecond()[1]);
+        }
+
+        boolean finalIsEmptyData = isEmptyData;
         save.setOnAction(e -> {
             val s0 = sub0.getSelectionModel().getSelectedItem();
 
@@ -54,10 +70,20 @@ public class SPOFormWindow
                 return;
             }
 
-            if(!showError(root, DBActions.createNewSPO(humanID, s0)))
+            if(!isEditingUser)
             {
-                Dialogs.showDefaultAlert(root, "Success!", "SPO created successfully!", Alert.AlertType.INFORMATION);
-                root.close();
+                if(!showError(root, DBActions.createNewSPO(humanID, s0)))
+                {
+                    Dialogs.showDefaultAlert(root, "Success!", "SPO updated successfully!", Alert.AlertType.INFORMATION);
+                    root.close();
+                }
+            }else
+            {
+                if(!showError(root, DBActions.updateSPO(humanID, s0, finalIsEmptyData)))
+                {
+                    Dialogs.showDefaultAlert(root, "Success!", "SPO updated successfully!", Alert.AlertType.INFORMATION);
+                    root.close();
+                }
             }
         });
     }

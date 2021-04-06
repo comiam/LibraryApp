@@ -44,7 +44,23 @@ public class AssistantFormWindow
                     sub0.setItems(FXCollections.observableArrayList(fac0.getSecond()));
             }
         });
+    }
 
+    public void setIsEditingUser(boolean isEditingUser)
+    {
+        boolean isEmptyData = false;
+        if(isEditingUser)
+        {
+            val res = DBActions.getRowInfoFrom(humanID, "HUMAN_ID", "ASSISTANT");
+
+            isEmptyData = res.getFirst().equals("empty");
+            if(!isEmptyData && showError(root, res.getFirst()))
+                root.close();
+            else
+                sub0.setValue(res.getSecond()[1]);
+        }
+
+        boolean finalIsEmptyData = isEmptyData;
         save.setOnAction(e -> {
             val s0 = sub0.getSelectionModel().getSelectedItem();
 
@@ -54,10 +70,20 @@ public class AssistantFormWindow
                 return;
             }
 
-            if(!showError(root, DBActions.createNewAssistant(humanID, s0)))
+            if(!isEditingUser)
             {
-                Dialogs.showDefaultAlert(root, "Success!", "Assistant created successfully!", Alert.AlertType.INFORMATION);
-                root.close();
+                if(!showError(root, DBActions.createNewAssistant(humanID, s0)))
+                {
+                    Dialogs.showDefaultAlert(root, "Success!", "Assistant created successfully!", Alert.AlertType.INFORMATION);
+                    root.close();
+                }
+            }else
+            {
+                if(!showError(root, DBActions.updateAssistant(humanID, s0, finalIsEmptyData)))
+                {
+                    Dialogs.showDefaultAlert(root, "Success!", "Assistant updated successfully!", Alert.AlertType.INFORMATION);
+                    root.close();
+                }
             }
         });
     }

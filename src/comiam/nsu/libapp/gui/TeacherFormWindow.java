@@ -40,8 +40,10 @@ public class TeacherFormWindow
         val subjects = DBActions.loadVariablesOfTable("SUBJECTS");
 
         if(checkStrArgs(grades.getFirst(), posts.getFirst(), subjects.getFirst()))
+        {
             showError(root, grades.getFirst() + "\n" + posts.getFirst() + "\n" + subjects.getFirst());
-        else
+            root.close();
+        } else
         {
             grade.setItems(GUIUtils.toList(grades.getSecond()));
             post.setItems(GUIUtils.toList(posts.getSecond()));
@@ -84,7 +86,28 @@ public class TeacherFormWindow
                     sub1.setItems(FXCollections.observableArrayList(fac0.getSecond()));
             }
         });
+    }
 
+    public void setIsEditingUser(boolean isEditingUser)
+    {
+        boolean isEmptyData = false;
+        if(isEditingUser)
+        {
+            val res = DBActions.getRowInfoFrom(humanID, "HUMAN_ID", "TEACHERS");
+
+            isEmptyData = res.getFirst().equals("empty");
+            if(!isEmptyData && showError(root, res.getFirst()))
+                root.close();
+            else
+            {
+                grade.setValue(res.getSecond()[1]);
+                post.setValue(res.getSecond()[2]);
+                sub0.setValue(res.getSecond()[3]);
+                sub1.setValue(res.getSecond()[4]);
+            }
+        }
+
+        boolean finalIsEmptyData = isEmptyData;
         save.setOnAction(e -> {
             val gr = grade.getSelectionModel().getSelectedItem();
             val p = post.getSelectionModel().getSelectedItem();
@@ -97,11 +120,22 @@ public class TeacherFormWindow
                 return;
             }
 
-            if(!showError(root, DBActions.createNewTeacher(humanID, gr, p, s0, s1)))
+            if(!isEditingUser)
             {
-                Dialogs.showDefaultAlert(root, "Success!", "Teacher created successfully!", Alert.AlertType.INFORMATION);
-                root.close();
+                if(!showError(root, DBActions.createNewTeacher(humanID, gr, p, s0, s1)))
+                {
+                    Dialogs.showDefaultAlert(root, "Success!", "Teacher created successfully!", Alert.AlertType.INFORMATION);
+                    root.close();
+                }
+            }else
+            {
+                if(!showError(root, DBActions.updateTeacher(humanID, gr, p, s0, s1, finalIsEmptyData)))
+                {
+                    Dialogs.showDefaultAlert(root, "Success!", "Teacher updated successfully!", Alert.AlertType.INFORMATION);
+                    root.close();
+                }
             }
+
         });
     }
 }
