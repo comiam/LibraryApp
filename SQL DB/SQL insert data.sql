@@ -82,3 +82,28 @@ insert into BOOKS values (0, 'Introduction to the Formal Language of Linguistics
 insert into BOOKS values (0, 'C++ for beginners', 'Herbert Schildt', to_date('2013', 'yyyy'));
 insert into BOOKS values (0, 'Java Philosophy', 'Eckel Bruce', to_date('2019', 'yyyy'));
 insert into BOOKS values (0, 'Modern operating systems', 'Andrew Tanenbaum', to_date('2015', 'yyyy'));
+
+--LIBRARY_HALLS
+insert into LIBRARY_HALLS values(0, 'abonement');
+insert into LIBRARY_HALLS values(1, 'abonement');
+insert into LIBRARY_HALLS values(2, 'intercol');
+insert into LIBRARY_HALLS values(3, 'readhall');
+insert into LIBRARY_HALLS values(4, 'readhall');	
+
+--HALL STORAGE
+insert into HALL_STORAGE values(4, 1, 11);
+insert into HALL_STORAGE values(4, 2, 18);
+insert into HALL_STORAGE values(4, 3, 12);
+insert into HALL_STORAGE values(4, 4, 14);
+insert into HALL_STORAGE values(4, 5, 16);
+insert into HALL_STORAGE values(4, 6, 12);
+insert into HALL_STORAGE values(4, 7, 23);
+insert into HALL_STORAGE values(4, 8, 26);
+insert into HALL_STORAGE values(4, 9, 13);
+insert into HALL_STORAGE values(4, 10, 9);
+insert into HALL_STORAGE values(4, 11, 18);
+insert into HALL_STORAGE values(4, 12, 15);
+insert into HALL_STORAGE values(4, 13, 14);
+insert into HALL_STORAGE values(4, 14, 34);
+insert into HALL_STORAGE values(4, 15, 45);
+insert into HALL_STORAGE values(4, 16, 23);

@@ -135,7 +135,7 @@ public class MainController
         refresh();
     }
 
-    public void refresh()
+    protected void refresh()
     {
         val data = GUIUtils.getCardRows(root);
 

@@ -55,9 +55,10 @@ public class DBCore
     {
         if(currentSession == null)
             return new Response("Session not initialized!", null, null);
+        Statement st = null;
         try
         {
-            Statement st = currentSession.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            st = currentSession.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
             if(!update)
                 st.executeQuery(request);
             else
@@ -70,7 +71,40 @@ public class DBCore
         }catch(Throwable e)
         {
             rollbackTransaction();
+            try
+            {
+                if(st != null)
+                    st.close();
+            }catch (SQLException ignored){}
             return new Response(e.getMessage(), null, null);
+        }
+    }
+
+    /*
+     * Semantic call like <procedure_name>(args)
+     * Function will made sql request {call <procedure_name>(args)} and execute
+     */
+    public static String callProcedure(String call)
+    {
+        if(currentSession == null)
+            return "Session not initialized!";
+
+        Statement st = null;
+        try
+        {
+            st = currentSession.prepareCall("{call " + call + "}", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            st.execute("{call " + call + "}");
+            commitTransaction();
+            return "";
+        }catch(Throwable e)
+        {
+            rollbackTransaction();
+            try
+            {
+                if(st != null)
+                    st.close();
+            }catch (SQLException ignored){}
+            return e.getMessage();
         }
     }
 
@@ -81,16 +115,21 @@ public class DBCore
     {
         if(currentSession == null)
             return new Response("Session not initialized!", null, null);
+        Statement st = null;
         try
         {
-            Statement st = currentSession.prepareStatement(request, Statement.RETURN_GENERATED_KEYS);
+            st = currentSession.prepareStatement(request, Statement.RETURN_GENERATED_KEYS);
             st.executeUpdate(request, new String[] {IDName});
 
             return new Response("", st.getGeneratedKeys(), st);
         }catch(Throwable e)
         {
             rollbackTransaction();
-
+            try
+            {
+                if(st != null)
+                    st.close();
+            }catch (SQLException ignored){}
             return new Response(e.getMessage(), null, null);
         }
     }
