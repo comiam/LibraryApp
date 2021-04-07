@@ -90,7 +90,7 @@ insert into LIBRARY_HALLS values(2, 'intercol');
 insert into LIBRARY_HALLS values(3, 'readhall');
 insert into LIBRARY_HALLS values(4, 'readhall');	
 
---HALL STORAGE
+--HALL STORAGE - test_data
 insert into HALL_STORAGE values(4, 1, 11);
 insert into HALL_STORAGE values(4, 2, 18);
 insert into HALL_STORAGE values(4, 3, 12);
@@ -103,7 +103,54 @@ insert into HALL_STORAGE values(4, 9, 13);
 insert into HALL_STORAGE values(4, 10, 9);
 insert into HALL_STORAGE values(4, 11, 18);
 insert into HALL_STORAGE values(4, 12, 15);
-insert into HALL_STORAGE values(4, 13, 14);
 insert into HALL_STORAGE values(4, 14, 34);
 insert into HALL_STORAGE values(4, 15, 45);
 insert into HALL_STORAGE values(4, 16, 23);
+
+insert into HALL_STORAGE values(5, 1, 23);
+insert into HALL_STORAGE values(5, 2, 34);
+insert into HALL_STORAGE values(5, 3, 17);
+insert into HALL_STORAGE values(5, 4, 5);
+insert into HALL_STORAGE values(5, 5, 1);
+insert into HALL_STORAGE values(5, 6, 6);
+insert into HALL_STORAGE values(5, 7, 12);
+insert into HALL_STORAGE values(5, 8, 20);
+insert into HALL_STORAGE values(5, 9, 8);
+insert into HALL_STORAGE values(5, 10, 15);
+insert into HALL_STORAGE values(5, 11, 34);
+insert into HALL_STORAGE values(5, 12, 23);
+insert into HALL_STORAGE values(5, 14, 14);
+insert into HALL_STORAGE values(5, 15, 23);
+insert into HALL_STORAGE values(5, 16, 45);	
+
+insert into HALL_STORAGE values(1, 1, 56);
+insert into HALL_STORAGE values(1, 2, 89);
+insert into HALL_STORAGE values(1, 3, 56);
+insert into HALL_STORAGE values(1, 4, 34);
+insert into HALL_STORAGE values(1, 5, 123);
+insert into HALL_STORAGE values(1, 6, 67);
+insert into HALL_STORAGE values(1, 7, 34);
+insert into HALL_STORAGE values(1, 8, 53);
+insert into HALL_STORAGE values(1, 9, 74);
+insert into HALL_STORAGE values(1, 10, 23);
+insert into HALL_STORAGE values(1, 11, 78);
+insert into HALL_STORAGE values(1, 12, 56);
+insert into HALL_STORAGE values(1, 14, 67);
+insert into HALL_STORAGE values(1, 15, 54);
+insert into HALL_STORAGE values(1, 16, 34);	
+
+insert into HALL_STORAGE values(2, 1, 78);
+insert into HALL_STORAGE values(2, 2, 45);
+insert into HALL_STORAGE values(2, 3, 45);
+insert into HALL_STORAGE values(2, 4, 53);
+insert into HALL_STORAGE values(2, 5, 96);
+insert into HALL_STORAGE values(2, 6, 23);
+insert into HALL_STORAGE values(2, 7, 43);
+insert into HALL_STORAGE values(2, 8, 123);
+insert into HALL_STORAGE values(2, 9, 33);
+insert into HALL_STORAGE values(2, 10, 21);
+insert into HALL_STORAGE values(2, 11, 67);
+insert into HALL_STORAGE values(2, 12, 94);
+insert into HALL_STORAGE values(2, 14, 24);
+insert into HALL_STORAGE values(2, 15, 35);
+insert into HALL_STORAGE values(2, 16, 76);		

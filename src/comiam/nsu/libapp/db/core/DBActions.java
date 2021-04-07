@@ -11,6 +11,74 @@ import static comiam.nsu.libapp.db.core.DBCore.*;
 
 public class DBActions
 {
+    public static Pair<String, String[]> getBooksList()
+    {
+        var res = makeRequest("select ID, NAME, YEAR_OF_PUBL from BOOKS", true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Can't get book list: " + res.getErrorMsg(), null);
+
+        String[] data = null;
+        try
+        {
+            val rs = res.getSet();
+
+            int rows = rs.last() ? rs.getRow() : 0;
+            rs.beforeFirst();
+            int columns = rs.getMetaData().getColumnCount();
+            data = new String[rows];
+
+            int rowI = 0;
+            while(rs.next())
+            {
+                data[rowI] = "";
+                for(int i = 1; i <= columns; i++)
+                    data[rowI] += (i == 1 ? "" : ": ") + (i == columns ? rs.getString(i).split(" ")[0] : rs.getString(i));
+                rowI++;
+            }
+        }catch (SQLException e) {
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
+        }
+
+        return new Pair<>("", data);
+    }
+
+    public static Pair<String, String[]> getUsersListForBook()
+    {
+        var res = makeRequest("select H.SURNAME, H.FIRST_NAME, H.PATRONYMIC, READER_CARD.ID from READER_CARD inner join HUMAN H on H.ID = READER_CARD.HUMAN_ID", true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Can't get user list: " + res.getErrorMsg(), null);
+
+        String[] data = null;
+        try
+        {
+            val rs = res.getSet();
+
+            int rows = rs.last() ? rs.getRow() : 0;
+            rs.beforeFirst();
+            int columns = rs.getMetaData().getColumnCount();
+            data = new String[rows];
+
+            int rowI = 0;
+            while(rs.next())
+            {
+                data[rowI] = "";
+                for(int i = 1; i <= columns; i++)
+                    data[rowI] += (i == columns ? ": " : i == 1 ? "" : " ") + rs.getString(i);
+                rowI++;
+            }
+        }catch (SQLException e) {
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
+        }
+
+        return new Pair<>("", data);
+    }
+
     public static Pair<String, String[]> getRowInfoFrom(String comparableValue, String compareColumn, String table)
     {
         var res = makeRequest("select * from " + table + " where " + compareColumn + " = " + comparableValue, true, false);

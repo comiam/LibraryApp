@@ -16,48 +16,53 @@ END;
 
 ------------------------------------------------------------------------------------------------
 
-CREATE OR REPLACE procedure get_book(BOOK_ID IN NUMBER, HALL_ID IN NUMBER, CARD_ID IN NUMBER, RETURN_DATE IN DATE)
+CREATE OR REPLACE procedure get_book(BOOK_ID_V IN NUMBER, HALL_ID_V IN NUMBER, CARD_ID_V IN NUMBER, RETURN_DATE_V IN DATE)
 IS
 	hallt VARCHAR(40);
 	cnt    NUMBER;
 	rules  NUMBER;
 BEGIN
-	select COUNT into cnt from HALL_STORAGE hs where hs.BOOK_ID = BOOK_ID and hs.HALL_ID = HALL_ID;
+	select count(*) into cnt from READER_CARD rd where rd.ID = CARD_ID_V;
+
+	if cnt = 0 then
+		RAISE_APPLICATION_ERROR(-20010, 'We havent this user!');
+	end if;
+
+	select COUNT into cnt from HALL_STORAGE hs where hs.BOOK_ID = BOOK_ID_V and hs.HALL_ID = HALL_ID_V;
 
 	if cnt = 0 then
 		RAISE_APPLICATION_ERROR(-20010, 'We havent this book in this hall!');
 	end if;
 
-	select count(*) into cnt from VIOLATIONS v where v.CARD_ID = CARD_ID and v.CARD_LOCK_UNTIL <= CURRENT_DATE;
+	select count(*) into cnt from VIOLATIONS v where v.CARD_ID = CARD_ID_V and v.CARD_LOCK_UNTIL <= CURRENT_DATE;
 
 	if cnt > 0 then
 		RAISE_APPLICATION_ERROR(-20010, 'This reader under sanctions and cant take book now!');
 	end if;
 
-	select HALL_TYPE_ID into hallt from LIBRARY_HALLS where ID = HALL_ID;
+	select HALL_TYPE_ID into hallt from LIBRARY_HALLS where ID = HALL_ID_V;
 
 	if hallt = 'intercol' then
-		select count(*) into cnt from MA_ORDER mao where mao.BOOK_ID = BOOK_ID and mao.CARD_ID = CARD_ID and mao.ORDER_DATE <= CURRENT_DATE and CURRENT_DATE <= mao.RETURN_DATE and mao.TAKEN is NULL;
+		select count(*) into cnt from MA_ORDER mao where mao.BOOK_ID = BOOK_ID_V and mao.CARD_ID = CARD_ID_V and mao.ORDER_DATE <= CURRENT_DATE and CURRENT_DATE <= mao.RETURN_DATE and mao.TAKEN is NULL;
 
 		if cnt > 0 then
 			RAISE_APPLICATION_ERROR(-20010, 'This book was not ordered!');
 		end if;
 
-		update MA_ORDER mao SET taken = CURRENT_DATE where BOOK_ID = mao.BOOK_ID and mao.CARD_ID = CARD_ID;
+		update MA_ORDER mao SET taken = CURRENT_DATE where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V;
 	elsif hallt = 'abonement' then
 		select CAN_TAKE_FOR_TIME into rules from READER_CARD rc, HUMAN h, READER_TYPE rt
-                                where CARD_ID = rc.ID and h.ID = rc.HUMAN_ID and h.TYPE_ID = rt.ID;
+                                where CARD_ID_V = rc.ID and h.ID = rc.HUMAN_ID and h.TYPE_ID = rt.ID;
 
 		if rules != 1 then
 			RAISE_APPLICATION_ERROR(-20010, 'This reader havent rules for taking away book!');
 		end if;
-	end if;			
+	end if;
 
-	insert into ACCEPTING_RETURNING_BOOKS values (BOOK_ID, HALL_ID, CARD_ID, CURRENT_DATE, RETURN_DATE, NULL, 0);
+	insert into ACCEPTING_RETURNING_BOOKS values (BOOK_ID_V, HALL_ID_V, CARD_ID_V, CURRENT_DATE, RETURN_DATE_V, NULL, 0);
+	update HALL_STORAGE hs SET COUNT = COUNT - 1 where hs.HALL_ID = HALL_ID_V and hs.BOOK_ID = BOOK_ID_V;
 
-	update HALL_STORAGE hs SET COUNT = COUNT - 1 where hs.HALL_ID = HALL_ID and hs.BOOK_ID = BOOK_ID;
-
-	rereg_reader(CARD_ID);
+	rereg_reader(CARD_ID_V);
 
 	commit;
 EXCEPTION
