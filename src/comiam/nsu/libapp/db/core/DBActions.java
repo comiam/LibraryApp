@@ -16,7 +16,8 @@ public class DBActions
         var res = makeRequest("select V.BOOK_ID, V.CARD_ID, V.HALL_ID, V.VIOLATION_DATE, V.VIOLATION_TYPE, H.SURNAME, H.FIRST_NAME, H.PATRONYMIC, B.NAME from VIOLATIONS V\n" +
                 " inner join READER_CARD RC on V.CARD_ID = RC.ID\n" +
                 " inner join HUMAN H on H.ID = RC.HUMAN_ID\n" +
-                " inner join BOOKS B on B.ID = V.BOOK_ID", true, false);
+                " inner join BOOKS B on B.ID = V.BOOK_ID\n" +
+                " where V.IS_CLOSED = 0", true, false);
         if(isBadResponse(res))
             return new Pair<>("Can't get violations: " + res.getErrorMsg(), null);
 
@@ -421,6 +422,43 @@ public class DBActions
         {
             res.closeAll();
         }
+    }
+
+    public static Pair<String, String[][]> getTableBookStorage(int hallID)
+    {
+        val res = makeRequest("select B.ID, B.NAME, B.YEAR_OF_PUBL, B.AUTHOR, HS.COUNT from BOOKS B\n" +
+                " inner join HALL_STORAGE HS on B.ID = HS.BOOK_ID\n" +
+                " where HS.HALL_ID = " + hallID, true, false);
+
+        if(isBadResponse(res))
+            return new Pair<>("Can't load table of book storage: " + res.getErrorMsg(), null);
+
+        String[][] data;
+        try
+        {
+            val rs = res.getSet();
+
+            int rows = rs.last() ? rs.getRow() : 0;
+            rs.beforeFirst();
+            int columns = rs.getMetaData().getColumnCount();
+
+            data = new String[rows][columns];
+
+            int rowI = 0;
+            while(rs.next())
+            {
+                for(int i = 1; i <= columns; i++)
+                    data[rowI][i - 1] = rs.getString(i);
+                rowI++;
+            }
+        }catch (SQLException e) {
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
+        }
+
+        return new Pair<>("", data);
     }
 
     public static Pair<String, String[][]> getTableOfCardData()

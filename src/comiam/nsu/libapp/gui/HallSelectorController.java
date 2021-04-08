@@ -46,7 +46,7 @@ public class HallSelectorController
             }
 
             root.close();
-            WindowLoader.loadMainWindow(userName, Integer.parseInt(hall.split(":")[0].trim()));
+            WindowLoader.loadMainWindow(userName, Integer.parseInt(hall.split(":")[0].trim()), hall.split(":")[1].trim().equals("intercol"));
         });
     }
 }

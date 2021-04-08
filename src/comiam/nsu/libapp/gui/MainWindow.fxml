@@ -19,7 +19,7 @@
 
 <VBox prefHeight="501.0" prefWidth="640.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="comiam.nsu.libapp.gui.MainController">
   <children>
-      <TabPane prefHeight="672.0" prefWidth="640.0" side="LEFT" tabClosingPolicy="UNAVAILABLE">
+      <TabPane fx:id="mainPane" prefHeight="672.0" prefWidth="640.0" side="LEFT" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab text="СДАЧА/ПРИЁМ">
                <content>
@@ -87,6 +87,11 @@
                   </TabPane>
                </content>
           </Tab>
+            <Tab fx:id="orderMA" text="ЗАКАЗЫ">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+               </content>
+            </Tab>
           <Tab text="КАРТОЧКИ">
                <content>
                   <VBox prefHeight="200.0" prefWidth="100.0">
@@ -210,27 +215,94 @@
             </Tab>
             <Tab text="ДАННЫЕ">
                <content>
-                  <VBox prefHeight="200.0" prefWidth="100.0">
-                     <children>
-                        <HBox minHeight="26.0" prefHeight="26.0" prefWidth="603.0">
-                           <children>
-                              <Label prefHeight="26.0" prefWidth="560.0" text="Выберите таблицу для просмотра:">
-                                 <font>
-                                    <Font size="17.0" />
-                                 </font>
-                              </Label>
-                              <Button fx:id="refreshTableData" mnemonicParsing="false" prefHeight="26.0" prefWidth="109.0" text="обновить" />
-                           </children>
-                        </HBox>
-                        <ChoiceBox fx:id="tables" minHeight="30.0" prefWidth="619.0" />
-                        <ScrollPane fx:id="tablePanel" prefHeight="424.0" prefWidth="595.0" />
-                     </children>
-                  </VBox>
+                  <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                      <Tab text="Таблицы">
+                           <content>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <HBox minHeight="26.0" prefHeight="26.0" prefWidth="603.0">
+                                       <children>
+                                          <Label prefHeight="26.0" prefWidth="560.0" text="Выберите таблицу для просмотра:">
+                                             <font>
+                                                <Font size="17.0" />
+                                             </font>
+                                          </Label>
+                                          <Button fx:id="refreshTableData" mnemonicParsing="false" prefHeight="26.0" prefWidth="109.0" text="обновить" />
+                                       </children>
+                                    </HBox>
+                                    <ChoiceBox fx:id="tables" minHeight="30.0" prefWidth="619.0" />
+                                    <ScrollPane fx:id="tablePanel" prefHeight="424.0" prefWidth="595.0" />
+                                 </children>
+                              </VBox>
+                           </content>
+                      </Tab>
+                      <Tab text="Статистика">
+                        <content>
+                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                        </content>
+                      </Tab>
+                    </tabs>
+                  </TabPane>
                </content>
             </Tab>
             <Tab text="СКЛАД">
                <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <Label prefHeight="26.0" prefWidth="560.0" text="Учёт склада книг:">
+                           <font>
+                              <Font size="17.0" />
+                           </font>
+                        </Label>
+                        <TabPane maxHeight="1.7976931348623157E308" prefHeight="479.0" prefWidth="603.0" tabClosingPolicy="UNAVAILABLE">
+                          <tabs>
+                            <Tab text="История изменения склада">
+                                 <content>
+                                    <TableView fx:id="bookAccountingTable" prefHeight="200.0" prefWidth="200.0">
+                                      <columns>
+                                        <TableColumn fx:id="bookIDAccColumn" prefWidth="35.0" text="ID" />
+                                        <TableColumn fx:id="bookNameAccColumn" prefWidth="207.0" text="Название книги" />
+                                          <TableColumn fx:id="bookYearAccColumn" prefWidth="91.0" text="Год издания" />
+                                          <TableColumn fx:id="bookAccTimeOperationColumn" prefWidth="91.0" text="Время" />
+                                          <TableColumn fx:id="bookAccOperation" prefWidth="98.0" text="Операция" />
+                                          <TableColumn fx:id="bookAccCountColumn" prefWidth="88.0" text="Количество" />
+                                      </columns>
+                                    </TableView>
+                                 </content>
+                            </Tab>
+                            <Tab text="Склад книг">
+                                 <content>
+                                    <VBox prefHeight="200.0" prefWidth="100.0">
+                                       <children>
+                                          <Button fx:id="refreshBookStorage" mnemonicParsing="false" prefWidth="652.0" text="Обновить" />
+                                          <TableView fx:id="bookStorageTable" prefHeight="411.0" prefWidth="603.0">
+                                             <columns>
+                                                <TableColumn fx:id="bookIDStoColumn" prefWidth="49.0" text="ID" />
+                                                <TableColumn fx:id="bookNameStoColumn" prefWidth="198.0" text="Название" />
+                                                <TableColumn fx:id="bookAuthorStoColumn" prefWidth="155.0" text="Автор" />
+                                                <TableColumn fx:id="bookYearStoColumn" minWidth="0.0" prefWidth="101.0" text="Издание" />
+                                                <TableColumn fx:id="bookCountStoColumn" prefWidth="100.0" text="Количество" />
+                                             </columns>
+                                          </TableView>
+                                       </children>
+                                    </VBox>
+                                 </content>
+                            </Tab>
+                              <Tab text="Добавить новую партию">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                 </content>
+                              </Tab>
+                              <Tab text="Списать книгу">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                 </content>
+                              </Tab>
+                          </tabs>
+                        </TabPane>
+                     </children>
+                  </VBox>
                </content>
             </Tab>
         </tabs>

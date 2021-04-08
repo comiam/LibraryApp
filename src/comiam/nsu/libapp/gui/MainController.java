@@ -2,6 +2,8 @@ package comiam.nsu.libapp.gui;
 
 import comiam.nsu.libapp.db.core.DBActions;
 import comiam.nsu.libapp.db.core.DBCore;
+import comiam.nsu.libapp.db.objects.BookOperationCard;
+import comiam.nsu.libapp.db.objects.BookStorageRow;
 import comiam.nsu.libapp.db.objects.PersonCard;
 import comiam.nsu.libapp.gui.custom.AutoCompleteTextField;
 import comiam.nsu.libapp.util.GUIUtils;
@@ -32,6 +34,8 @@ public class MainController
     @FXML
     private VBox violationClosingBox;
     @FXML
+    private TabPane mainPane;
+    @FXML
     private ChoiceBox<String> tables;
     @FXML
     private ChoiceBox<String> violationType;
@@ -56,6 +60,37 @@ public class MainController
     @FXML
     private Button closeViolation;
     @FXML
+    private Button refreshBookStorage;
+
+    @FXML
+    private TableView<PersonCard> cardTable;
+    @FXML
+    private TableView<BookOperationCard> bookAccountingTable;
+    @FXML
+    private TableView<BookStorageRow> bookStorageTable;
+    @FXML
+    private TableColumn<BookStorageRow, String> bookIDStoColumn;
+    @FXML
+    private TableColumn<BookStorageRow, String> bookNameStoColumn;
+    @FXML
+    private TableColumn<BookStorageRow, String> bookYearStoColumn;
+    @FXML
+    private TableColumn<BookStorageRow, String> bookAuthorStoColumn;
+    @FXML
+    private TableColumn<BookStorageRow, String> bookCountStoColumn;
+    @FXML
+    private TableColumn<BookOperationCard, String> bookIDAccColumn;
+    @FXML
+    private TableColumn<BookOperationCard, String> bookNameAccColumn;
+    @FXML
+    private TableColumn<BookOperationCard, String> bookYearAccColumn;
+    @FXML
+    private TableColumn<BookOperationCard, String> bookAccTimeOperationColumn;
+    @FXML
+    private TableColumn<BookOperationCard, String> bookAccOperation;
+    @FXML
+    private TableColumn<BookOperationCard, String> bookAccCountColumn;
+    @FXML
     private TableColumn<PersonCard, String> IDColumn;
     @FXML
     private TableColumn<PersonCard, String> firstNameColumn;
@@ -71,6 +106,7 @@ public class MainController
     private TableColumn<PersonCard, String> typeColumn;
     @FXML
     private TableColumn<PersonCard, String> canTakeAwayColumn;
+
     @FXML
     private Label markTF1;
     @FXML
@@ -86,8 +122,6 @@ public class MainController
     @FXML
     private Label markTF7;
     @FXML
-    private TableView<PersonCard> cardTable;
-    @FXML
     private DatePicker dateMustReturningOnGiving;
     @FXML
     private DatePicker violationDate;
@@ -97,6 +131,9 @@ public class MainController
     private TextField monFine;
     @FXML
     private CheckBox bookReturned;
+    @FXML
+    private Tab orderMA;
+
 
     private AutoCompleteTextField userFIOOnGiving;
     private AutoCompleteTextField bookNameOnGiving;
@@ -110,6 +147,8 @@ public class MainController
     private Stage root;
     @Setter
     private int hallID;
+    @Setter
+    private boolean isMA;
 
     private String selectedTableName;
 
@@ -122,7 +161,14 @@ public class MainController
         setupActions();
         fillChoiceList();
         editDatePickers();
-        refresh();
+        if(!isMA)
+            hideMAOrders();
+        refreshUsersCardTable();
+    }
+
+    private void hideMAOrders()
+    {
+        mainPane.getTabs().remove(orderMA);
     }
 
     private void editDatePickers()
@@ -193,6 +239,8 @@ public class MainController
 
     private void setupActions()
     {
+        refreshBookStorage.setOnAction(e -> refreshBookStorageTable());
+
         closeViolation.setOnAction(e -> {
             val violation = violationData.getText();
 
@@ -437,7 +485,7 @@ public class MainController
             }
         });
 
-        refreshTableCards.setOnAction(e -> refresh());
+        refreshTableCards.setOnAction(e -> refreshUsersCardTable());
         deleteSelectedUser.setOnAction(e -> {
             val user = cardTable.getSelectionModel().getSelectedItem();
 
@@ -450,7 +498,7 @@ public class MainController
             val result = DBActions.deleteSelectedUser(user);
 
             if (!showError(root, result))
-                refresh();
+                refreshUsersCardTable();
         });
 
         addNewUser.setOnAction(e -> WindowLoader.loadEnterReaderOneWindow(this, false));
@@ -477,9 +525,25 @@ public class MainController
         rewriteDateColumn.setCellValueFactory(new PropertyValueFactory<>("rewriteDate"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
         canTakeAwayColumn.setCellValueFactory(new PropertyValueFactory<>("canTakeAwayBook"));
+
+        bookIDStoColumn.setCellValueFactory(new PropertyValueFactory<>("ID"));
+        bookNameStoColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        bookYearStoColumn.setCellValueFactory(new PropertyValueFactory<>("year"));
+        bookAuthorStoColumn.setCellValueFactory(new PropertyValueFactory<>("author"));
+        bookCountStoColumn.setCellValueFactory(new PropertyValueFactory<>("count"));
     }
 
-    protected void refresh()
+    private void refreshBookStorageTable()
+    {
+        val data = GUIUtils.getBookStorageRows(root, hallID);
+
+        if(data == null)
+            return;
+
+        bookStorageTable.setItems(data);
+    }
+
+    protected void refreshUsersCardTable()
     {
         val data = GUIUtils.getCardRows(root);
 

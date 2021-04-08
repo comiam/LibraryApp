@@ -217,7 +217,7 @@ public class WindowLoader
         }
     }
 
-    public static void loadMainWindow(String name, int hallID)
+    public static void loadMainWindow(String name, int hallID, boolean isMAHall)
     {
         try
         {
@@ -229,6 +229,7 @@ public class WindowLoader
             MainController controller = loader.getController();
             controller.setRoot(newWindow);
             controller.setHallID(hallID);
+            controller.setMA(isMAHall);
 
             newWindow.setTitle(name);
             newWindow.setResizable(false);

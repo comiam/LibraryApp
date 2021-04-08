@@ -1,6 +1,7 @@
 package comiam.nsu.libapp.util;
 
 import comiam.nsu.libapp.db.core.DBActions;
+import comiam.nsu.libapp.db.objects.BookStorageRow;
 import comiam.nsu.libapp.db.objects.PersonCard;
 import comiam.nsu.libapp.gui.Dialogs;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -77,6 +78,22 @@ public class GUIUtils
             return null;
 
         return FXCollections.observableArrayList(data.getSecond());
+    }
+
+    public static ObservableList<BookStorageRow> getBookStorageRows(Stage root, int hallID)
+    {
+        val res = DBActions.getTableBookStorage(hallID);
+
+        if(showError(root, res.getFirst()))
+            return null;
+
+        val table = res.getSecond();
+        val rows = new ArrayList<BookStorageRow>();
+
+        for (val row : table)
+            rows.add(new BookStorageRow(row[0], row[1], row[2], row[3], row[4]));
+
+        return FXCollections.observableArrayList(rows);
     }
 
     public static ObservableList<PersonCard> getCardRows(Stage root)

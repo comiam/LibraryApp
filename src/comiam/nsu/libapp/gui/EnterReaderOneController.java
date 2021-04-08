@@ -86,7 +86,7 @@ public class EnterReaderOneController
             }
 
             if(!showError(root, res.getFirst()))
-                controller.refresh();
+                controller.refreshUsersCardTable();
 
             root.close();
 
