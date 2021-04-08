@@ -52,6 +52,7 @@ insert into DEPARTMENT values ('quantum computing');
 --VIOLATION_TYPES
 insert into VIOLATION_TYPES values ('lost');
 insert into VIOLATION_TYPES values ('lateret');
+insert into VIOLATION_TYPES values ('corrupted');
 
 --HALL_TYPE
 insert into HALL_TYPE values ('intercol');
@@ -59,29 +60,29 @@ insert into HALL_TYPE values ('readhall');
 insert into HALL_TYPE values ('abonement');	
 
 --Physics
-insert into BOOKS values (0, 'You are joking, of course, Mr. Feynman!', 'Richard Feynman', to_date('1985', 'yyyy'));
-insert into BOOKS values (0, 'Feynman Lectures on Gravity', 'Richard Feynman', to_date('2000', 'yyyy'));
-insert into BOOKS values (0, 'Feynman Lectures on Physics', 'Richard Feynman', to_date('1967', 'yyyy'));
+insert into BOOKS values (0, 'You are joking, of course, Mr. Feynman!', 'Richard Feynman', to_date('1985', 'yyyy'), 1200);
+insert into BOOKS values (0, 'Feynman Lectures on Gravity', 'Richard Feynman', to_date('2000', 'yyyy'), 1500);
+insert into BOOKS values (0, 'Feynman Lectures on Physics', 'Richard Feynman', to_date('1967', 'yyyy'), 1100);
 
 --Math
-insert into BOOKS values (0, 'Collection of problems in linear algebra', 'Igor Vladimirovich Proscuryakov', to_date('2010', 'yyyy'));
-insert into BOOKS values (0, 'Collection of problems in mathematical analysis', 'Boris Pavlovich Demidovich', to_date('1995', 'yyyy'));
-insert into BOOKS values (0, 'Diff. geom. and Lie algebras and their app-s in field theory', 'Igor Pavlovich Volobuev', to_date('1998', 'yyyy'));
+insert into BOOKS values (0, 'Collection of problems in linear algebra', 'Igor Vladimirovich Proscuryakov', to_date('2010', 'yyyy'), 2000);
+insert into BOOKS values (0, 'Collection of problems in mathematical analysis', 'Boris Pavlovich Demidovich', to_date('1995', 'yyyy'), 2100);
+insert into BOOKS values (0, 'Diff. geom. and Lie algebras and their app-s in field theory', 'Igor Pavlovich Volobuev', to_date('1998', 'yyyy'), 1600);
 
 --Chemistry
-insert into BOOKS values (0, 'Organic chemistry. All volumes', 'Traven Valery Fedorovich', to_date('2015', 'yyyy'));
-insert into BOOKS values (0, 'Physical chemistry course. All volumes', 'Yakov Ivanovich Gerasimov', to_date('1964', 'yyyy'));
-insert into BOOKS values (0, 'Quantum biochemistry for chemists and biologists', 'Yakov Ladik', to_date('1975', 'yyyy'));
+insert into BOOKS values (0, 'Organic chemistry. All volumes', 'Traven Valery Fedorovich', to_date('2015', 'yyyy'), 3000);
+insert into BOOKS values (0, 'Physical chemistry course. All volumes', 'Yakov Ivanovich Gerasimov', to_date('1964', 'yyyy'), 2300);
+insert into BOOKS values (0, 'Quantum biochemistry for chemists and biologists', 'Yakov Ladik', to_date('1975', 'yyyy'), 1700);
 
 --Langs
-insert into BOOKS values (0, 'The word is alive and the word is dead', 'Nora Gal', to_date('1972', 'yyyy'));
-insert into BOOKS values (0, 'Theory of language. Introductory course', 'Boris Ustinovich Norman', to_date('2003', 'yyyy'));
-insert into BOOKS values (0, 'Introduction to the Formal Language of Linguistics', 'Yuri Konstantinovich Lekomtsev', to_date('1983', 'yyyy'));
+insert into BOOKS values (0, 'The word is alive and the word is dead', 'Nora Gal', to_date('1972', 'yyyy'), 800);
+insert into BOOKS values (0, 'Theory of language. Introductory course', 'Boris Ustinovich Norman', to_date('2003', 'yyyy'), 1900);
+insert into BOOKS values (0, 'Introduction to the Formal Language of Linguistics', 'Yuri Konstantinovich Lekomtsev', to_date('1983', 'yyyy'), 2100);
 
 --Programming
-insert into BOOKS values (0, 'C++ for beginners', 'Herbert Schildt', to_date('2013', 'yyyy'));
-insert into BOOKS values (0, 'Java Philosophy', 'Eckel Bruce', to_date('2019', 'yyyy'));
-insert into BOOKS values (0, 'Modern operating systems', 'Andrew Tanenbaum', to_date('2015', 'yyyy'));
+insert into BOOKS values (0, 'C++ for beginners', 'Herbert Schildt', to_date('2013', 'yyyy'), 1400);
+insert into BOOKS values (0, 'Java Philosophy', 'Eckel Bruce', to_date('2019', 'yyyy'), 3000);
+insert into BOOKS values (0, 'Modern operating systems', 'Andrew Tanenbaum', to_date('2015', 'yyyy'), 2000);
 
 --LIBRARY_HALLS
 insert into LIBRARY_HALLS values(0, 'abonement');
@@ -154,3 +155,5 @@ insert into HALL_STORAGE values(2, 12, 94);
 insert into HALL_STORAGE values(2, 14, 24);
 insert into HALL_STORAGE values(2, 15, 35);
 insert into HALL_STORAGE values(2, 16, 76);		
+
+--DONT FORGET COMMIT THIS ;)	

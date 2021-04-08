@@ -11,13 +11,34 @@ import static comiam.nsu.libapp.db.core.DBCore.*;
 
 public class DBActions
 {
+    public static Pair<String, String> getBookCost(String bookID)
+    {
+        var res = makeRequest("select COST from BOOKS where ID = " + bookID, true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Can't get cost: " + res.getErrorMsg(), "");
+
+        var cost = "";
+        try
+        {
+            if(res.getSet().next())
+                cost = res.getSet().getString(1);
+        }catch (SQLException e) {
+            rollbackTransaction();
+            return new Pair<>("Can't get cost: " + e.getMessage(), "");
+        } finally
+        {
+            res.closeAll();
+        }
+        return new Pair<>("", cost);
+    }
+
     public static Pair<String, String[]> getHallNames()
     {
         var res = makeRequest("select LH.ID, HT.ID_NAME from LIBRARY_HALLS LH inner join HALL_TYPE HT on HT.ID_NAME = LH.HALL_TYPE_ID", true, false);
         if(isBadResponse(res))
             return new Pair<>("Can't get halls list: " + res.getErrorMsg(), null);
 
-        String[] data = null;
+        String[] data;
         try
         {
             val rs = res.getSet();
@@ -51,7 +72,7 @@ public class DBActions
         if(isBadResponse(res))
             return new Pair<>("Can't get book list: " + res.getErrorMsg(), null);
 
-        String[] data = null;
+        String[] data;
         try
         {
             val rs = res.getSet();
@@ -85,7 +106,7 @@ public class DBActions
         if(isBadResponse(res))
             return new Pair<>("Can't get user list: " + res.getErrorMsg(), null);
 
-        String[] data = null;
+        String[] data;
         try
         {
             val rs = res.getSet();

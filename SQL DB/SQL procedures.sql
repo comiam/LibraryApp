@@ -65,9 +65,6 @@ BEGIN
 	rereg_reader(CARD_ID_V);
 
 	commit;
-EXCEPTION
-WHEN OTHERS THEN
-   raise_application_error(-20010,SQLERRM);
 END;
 
 ------------------------------------------------------------------------------------------------
@@ -113,31 +110,55 @@ BEGIN
 	rereg_reader(CARD_ID_V);
 
 	commit;
-EXCEPTION
-WHEN OTHERS THEN
-   raise_application_error(-20010,SQLERRM);
 END;
 
 ------------------------------------------------------------------------------------------------
 
-CREATE OR REPLACE procedure close_violation(BOOK_ID IN NUMBER, HALL_ID IN NUMBER, CARD_ID IN NUMBER, VIOLATION_DATE in DATE)
+CREATE OR REPLACE procedure open_violation(BOOK_ID_V IN NUMBER, HALL_ID_V IN NUMBER, CARD_ID_V IN NUMBER, TYPE_V IN VARCHAR2, LOST_DATE IN DATE, MONETARY_FINE_V IN NUMBER, CARD_LOCK_UNTIL_V IN DATE)
 IS
 	cnt NUMBER;
 BEGIN
-	select count(*) into cnt from VIOLATIONS v where v.BOOK_ID = BOOK_ID and v.HALL_ID = HALL_ID and v.CARD_ID = CARD_ID and v.VIOLATION_DATE = VIOLATION_DATE;
+    select count(*) into cnt from READER_CARD rd where rd.ID = CARD_ID_V;
+
+    if cnt = 0 then
+		RAISE_APPLICATION_ERROR(-20010, 'We havent this user!');
+	end if;
+
+	select count(*) into cnt from BOOKS hs where hs.ID = BOOK_ID_V;
+
+	if cnt = 0 then
+		RAISE_APPLICATION_ERROR(-20010, 'We havent this book in library!');
+	end if;
+
+	select count(*) into cnt from ACCEPTING_RETURNING_BOOKS arb where arb.BOOK_ID = BOOK_ID_V and arb.HALL_ID = HALL_ID_V and arb.CARD_ID = CARD_ID_V and arb.DATE_ACCEPTING <= LOST_DATE and arb.DATE_MUST_RETURNING >= LOST_DATE;
+
+	if cnt = 0 then
+        RAISE_APPLICATION_ERROR(-20010, 'User cant lost or corrupt anything!');
+    end if;
+
+	update ACCEPTING_RETURNING_BOOKS arb set LOST_BOOK = 1 where arb.BOOK_ID = BOOK_ID_V and arb.HALL_ID = HALL_ID_V and arb.CARD_ID = CARD_ID_V and arb.DATE_ACCEPTING <= LOST_DATE and arb.DATE_MUST_RETURNING >= LOST_DATE;
+	insert into VIOLATIONS values (BOOK_ID_V, CARD_ID_V, HALL_ID_V, LOST_DATE, TYPE_V, MONETARY_FINE_V, CARD_LOCK_UNTIL_V, 0);
+
+    rereg_reader(CARD_ID_V);
+	commit;
+END;
+
+------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE procedure close_violation(BOOK_ID_V IN NUMBER, HALL_ID_V IN NUMBER, CARD_ID_V IN NUMBER, VIOLATION_DATE_V in DATE)
+IS
+	cnt NUMBER;
+BEGIN
+	select count(*) into cnt from VIOLATIONS v where v.BOOK_ID = BOOK_ID_V and v.HALL_ID = HALL_ID_V and v.CARD_ID = CARD_ID_V and v.VIOLATION_DATE = VIOLATION_DATE_V;
 
 	if cnt = 0 then
 		RAISE_APPLICATION_ERROR(-20010, 'we havent this violation in data base!');
 	end if;	
 	
-	update VIOLATIONS v set IS_CLOSED = 1 where v.BOOK_ID = BOOK_ID and v.HALL_ID = HALL_ID and v.CARD_ID = CARD_ID and v.VIOLATION_DATE = VIOLATION_DATE;
-
-	rereg_reader(CARD_ID);
+	update VIOLATIONS v set IS_CLOSED = 1 where v.BOOK_ID = BOOK_ID_V and v.HALL_ID = HALL_ID_V and v.CARD_ID = CARD_ID_V and v.VIOLATION_DATE = VIOLATION_DATE_V;
+	rereg_reader(CARD_ID_V);
 
 	commit;
-EXCEPTION
-WHEN OTHERS THEN
-   raise_application_error(-20010,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
 END;
 
 ------------------------------------------------------------------------------------------------

@@ -5,6 +5,7 @@ import comiam.nsu.libapp.db.core.DBCore;
 import comiam.nsu.libapp.db.objects.PersonCard;
 import comiam.nsu.libapp.gui.custom.AutoCompleteTextField;
 import comiam.nsu.libapp.util.GUIUtils;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -14,18 +15,24 @@ import lombok.Setter;
 import lombok.val;
 import lombok.var;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 
 import static comiam.nsu.libapp.util.GUIUtils.*;
+import static comiam.nsu.libapp.util.StringChecker.checkStrArgs;
 
 public class MainController
 {
     @FXML
     private VBox givingBookBox;
     @FXML
+    private VBox violationOpenBox;
+    @FXML
     private VBox returningBookBox;
     @FXML
     private ChoiceBox<String> tables;
+    @FXML
+    private ChoiceBox<String> violationType;
     @FXML
     private ScrollPane tablePanel;
     @FXML
@@ -42,6 +49,8 @@ public class MainController
     private Button giveBook;
     @FXML
     private Button returnBook;
+    @FXML
+    private Button addViolation;
     @FXML
     private TableColumn<PersonCard, String> IDColumn;
     @FXML
@@ -67,14 +76,26 @@ public class MainController
     @FXML
     private Label markTF4;
     @FXML
+    private Label markTF5;
+    @FXML
+    private Label markTF6;
+    @FXML
     private TableView<PersonCard> cardTable;
     @FXML
     private DatePicker dateMustReturningOnGiving;
+    @FXML
+    private DatePicker violationDate;
+    @FXML
+    private DatePicker blockDate;
+    @FXML
+    private TextField monFine;
 
     private AutoCompleteTextField userFIOOnGiving;
     private AutoCompleteTextField bookNameOnGiving;
     private AutoCompleteTextField userFIOOnReturning;
     private AutoCompleteTextField bookNameOnReturning;
+    private AutoCompleteTextField userFIOOnViolation;
+    private AutoCompleteTextField bookNameOnViolation;
 
     @Setter
     private Stage root;
@@ -90,8 +111,26 @@ public class MainController
         insertAutocompleteTextFiled();
         setupColumns();
         setupActions();
-        fillDataTableList();
+        fillChoiceList();
+        editDatePickers();
         refresh();
+    }
+
+    private void editDatePickers()
+    {
+        dateMustReturningOnGiving.setDayCellFactory(picker -> new DateCell() {
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.compareTo(LocalDate.now()) < 0);
+            }
+        });
+        violationDate.setDayCellFactory(picker -> new DateCell() {
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.compareTo(LocalDate.now()) > 0);
+            }
+        });
+        blockDate.setDayCellFactory(dateMustReturningOnGiving.getDayCellFactory());
     }
 
     private void insertAutocompleteTextFiled()
@@ -104,11 +143,16 @@ public class MainController
         pane2.add(pane2.indexOf(markTF3) + 1, (userFIOOnReturning = new AutoCompleteTextField()));
         pane2.add(pane2.indexOf(markTF4) + 1, (bookNameOnReturning = new AutoCompleteTextField()));
 
+        val pane3 = violationOpenBox.getChildren();
+        pane3.add(pane3.indexOf(markTF5) + 1, (userFIOOnViolation = new AutoCompleteTextField()));
+        pane3.add(pane3.indexOf(markTF6) + 1, (bookNameOnViolation = new AutoCompleteTextField()));
+
         var res = DBActions.getUsersListForBook();
         if(res.getFirst().isEmpty())
         {
             userFIOOnGiving.getEntries().addAll(Arrays.asList(res.getSecond()));
             userFIOOnReturning.getEntries().addAll(Arrays.asList(res.getSecond()));
+            userFIOOnViolation.getEntries().addAll(Arrays.asList(res.getSecond()));
         }
 
         res = DBActions.getBooksList();
@@ -116,19 +160,91 @@ public class MainController
         {
             bookNameOnGiving.getEntries().addAll(Arrays.asList(res.getSecond()));
             bookNameOnReturning.getEntries().addAll(Arrays.asList(res.getSecond()));
+            bookNameOnViolation.getEntries().addAll(Arrays.asList(res.getSecond()));
         }
     }
 
-    private void fillDataTableList()
+    private void fillChoiceList()
     {
         val names = getTableNames(root);
 
         if (names != null)
             tables.setItems(names);
+
+        violationType.setItems(FXCollections.observableArrayList("lost", "corrupted"));
     }
 
     private void setupActions()
     {
+        bookNameOnViolation.textProperty().addListener((observable, oldValue, newValue) -> {
+            val book = bookNameOnViolation.getText();
+            val cont = bookNameOnViolation.getEntries().stream().anyMatch(v -> v.equals(book));
+
+            if(cont)
+                try
+                {
+                    //Need for check validation of book ID
+                    val res = DBActions.getBookCost(Integer.parseInt(book.split(":")[0].trim()) + "");
+
+                    if(res.getFirst().isEmpty())
+                    {
+                        monFine.setText(Integer.parseInt(res.getSecond()) * 10 + " ");
+                        monFine.setEditable(false);
+                    }else
+                        monFine.setEditable(true);
+
+                }catch (Throwable ignored) {}
+        });
+
+        addViolation.setOnAction(e -> {
+            val user = userFIOOnViolation.getText().trim();
+            val book = bookNameOnViolation.getText().trim();
+            val date = violationDate.getValue();
+            val type = violationType.getValue().trim();
+            val block = blockDate.getValue();
+            val fine = monFine.getText().trim();
+
+            if(!checkStrArgs(user, book, type, fine) || date == null)
+            {
+                showError(root, "Empty fields!");
+                return;
+            }
+
+            val dateStr = date.toString();
+
+            if(user.trim().split(":").length < 2)
+            {
+                showError(root, "Invalid user field!");
+                return;
+            }
+
+            if(book.trim().split(":").length < 3)
+            {
+                showError(root, "Invalid book field!");
+                return;
+            }
+
+            int cardID;
+            int bookID;
+            int fineInt;
+            try
+            {
+                cardID = Integer.parseInt(user.trim().split(":")[1].trim());
+                bookID = Integer.parseInt(book.trim().split(":")[0].trim());
+                fineInt = Integer.parseInt(fine);
+            }catch (Throwable ex) {
+                showError(root, "Invalid values in user or book or fine fields!");
+                return;
+            }
+
+            val res = DBCore.callProcedure("OPEN_VIOLATION(" + bookID + ", " + hallID + ", " + cardID + ", '" +
+                    type + "', TO_DATE('" + dateStr + "', 'yyyy-mm-dd'), " + fineInt + ", " + (block == null ? "NULL" : "TO_DATE('" + block.toString() + "', 'yyyy-mm-dd')") + ")");
+            if(res.isEmpty())
+                Dialogs.showDefaultAlert(root, "Success!", "Violation added!", Alert.AlertType.INFORMATION);
+            else
+                showError(root, res);
+        });
+
         giveBook.setOnAction(e -> {
             val user = userFIOOnGiving.getText();
             val book = bookNameOnGiving.getText();
