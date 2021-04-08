@@ -143,8 +143,7 @@ public class MainController
                 showError(root, "Invalid values in user or book fields!");
                 return;
             }
-
-            val res = DBCore.callProcedure("get_book(" + bookID + ", " + hallID + ", " + cardID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd')");
+            val res = DBCore.callProcedure("GET_BOOK(" + bookID + ", " + hallID + ", " + cardID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'))");
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Success!", "The book can be handed in!", Alert.AlertType.INFORMATION);
             else
