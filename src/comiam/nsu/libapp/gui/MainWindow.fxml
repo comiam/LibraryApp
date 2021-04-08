@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
@@ -135,7 +136,7 @@
                            <content>
                               <VBox fx:id="violationOpenBox" prefHeight="200.0" prefWidth="100.0">
                                  <children>
-                                    <Label prefHeight="26.0" prefWidth="560.0" text="Заявить о потерянной книге:">
+                                    <Label prefHeight="26.0" prefWidth="560.0" text="Заявить о потерянной или испорченной книге:">
                                        <font>
                                           <Font size="17.0" />
                                        </font>
@@ -169,7 +170,7 @@
                                        </font>
                                     </Label>
                                     <TextField fx:id="monFine" editable="false" prefWidth="603.0" />
-                                    <Label fx:id="markTF11111" text="До какой даты заблокировать читателя:">
+                                    <Label fx:id="markTF11111" text="До какой даты заблокировать читателя(можно не блокировать):">
                                        <font>
                                           <Font size="13.0" />
                                        </font>
@@ -182,9 +183,26 @@
                            </content>
                       </Tab>
                       <Tab text="Закрыть долг">
-                        <content>
-                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                        </content>
+                           <content>
+                              <VBox fx:id="violationClosingBox" prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <Label prefHeight="26.0" prefWidth="560.0" text="Закрыть задолженность или штраф:">
+                                       <font>
+                                          <Font size="17.0" />
+                                       </font>
+                                    </Label>
+                                    <Separator orientation="VERTICAL" prefHeight="33.0" prefWidth="0.0" />
+                                    <Label fx:id="markTF7" text="Вводите любую информацию о задолженности(дата, ФИО или книга)::">
+                                       <font>
+                                          <Font size="13.0" />
+                                       </font>
+                                    </Label>
+                                    <Separator orientation="VERTICAL" prefHeight="33.0" prefWidth="0.0" />
+                                    <CheckBox fx:id="bookReturned" mnemonicParsing="false" text="Книга заменена или возвращена заместо выплаты штрафа" />
+                                    <Button fx:id="closeViolation" mnemonicParsing="false" prefWidth="1127.0" text="Закрыть задолженность" />
+                                 </children>
+                              </VBox>
+                           </content>
                       </Tab>
                     </tabs>
                   </TabPane>

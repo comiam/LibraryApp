@@ -34,7 +34,7 @@ BEGIN
 		RAISE_APPLICATION_ERROR(-20010, 'We havent this book in this hall!');
 	end if;
 
-	select count(*) into cnt from VIOLATIONS v where v.CARD_ID = CARD_ID_V and v.CARD_LOCK_UNTIL <= CURRENT_DATE;
+	select count(*) into cnt from VIOLATIONS v where v.CARD_ID = CARD_ID_V and v.CARD_LOCK_UNTIL >= CURRENT_DATE;
 
 	if cnt > 0 then
 		RAISE_APPLICATION_ERROR(-20010, 'This reader under sanctions and cant take book now!');
@@ -145,7 +145,7 @@ END;
 
 ------------------------------------------------------------------------------------------------
 
-CREATE OR REPLACE procedure close_violation(BOOK_ID_V IN NUMBER, HALL_ID_V IN NUMBER, CARD_ID_V IN NUMBER, VIOLATION_DATE_V in DATE)
+CREATE OR REPLACE procedure close_violation(BOOK_ID_V IN NUMBER, HALL_ID_V IN NUMBER, CARD_ID_V IN NUMBER, VIOLATION_DATE_V in DATE, BOOK_RETURNED IN NUMBER)
 IS
 	cnt NUMBER;
 BEGIN
@@ -156,6 +156,11 @@ BEGIN
 	end if;	
 	
 	update VIOLATIONS v set IS_CLOSED = 1 where v.BOOK_ID = BOOK_ID_V and v.HALL_ID = HALL_ID_V and v.CARD_ID = CARD_ID_V and v.VIOLATION_DATE = VIOLATION_DATE_V;
+	
+	if BOOK_RETURNED = 1 then
+		update HALL_STORAGE hs SET COUNT = COUNT + 1 where hs.HALL_ID = HALL_ID_V and hs.BOOK_ID = BOOK_ID_V;
+	end if;		
+
 	rereg_reader(CARD_ID_V);
 
 	commit;

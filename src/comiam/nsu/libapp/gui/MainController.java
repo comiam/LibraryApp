@@ -30,6 +30,8 @@ public class MainController
     @FXML
     private VBox returningBookBox;
     @FXML
+    private VBox violationClosingBox;
+    @FXML
     private ChoiceBox<String> tables;
     @FXML
     private ChoiceBox<String> violationType;
@@ -51,6 +53,8 @@ public class MainController
     private Button returnBook;
     @FXML
     private Button addViolation;
+    @FXML
+    private Button closeViolation;
     @FXML
     private TableColumn<PersonCard, String> IDColumn;
     @FXML
@@ -80,6 +84,8 @@ public class MainController
     @FXML
     private Label markTF6;
     @FXML
+    private Label markTF7;
+    @FXML
     private TableView<PersonCard> cardTable;
     @FXML
     private DatePicker dateMustReturningOnGiving;
@@ -89,6 +95,8 @@ public class MainController
     private DatePicker blockDate;
     @FXML
     private TextField monFine;
+    @FXML
+    private CheckBox bookReturned;
 
     private AutoCompleteTextField userFIOOnGiving;
     private AutoCompleteTextField bookNameOnGiving;
@@ -96,6 +104,7 @@ public class MainController
     private AutoCompleteTextField bookNameOnReturning;
     private AutoCompleteTextField userFIOOnViolation;
     private AutoCompleteTextField bookNameOnViolation;
+    private AutoCompleteTextField violationData;
 
     @Setter
     private Stage root;
@@ -147,6 +156,9 @@ public class MainController
         pane3.add(pane3.indexOf(markTF5) + 1, (userFIOOnViolation = new AutoCompleteTextField()));
         pane3.add(pane3.indexOf(markTF6) + 1, (bookNameOnViolation = new AutoCompleteTextField()));
 
+        val pane4 = violationClosingBox.getChildren();
+        pane4.add(pane4.indexOf(markTF7) + 1, (violationData = new AutoCompleteTextField()));
+
         var res = DBActions.getUsersListForBook();
         if(res.getFirst().isEmpty())
         {
@@ -162,6 +174,11 @@ public class MainController
             bookNameOnReturning.getEntries().addAll(Arrays.asList(res.getSecond()));
             bookNameOnViolation.getEntries().addAll(Arrays.asList(res.getSecond()));
         }
+        res = DBActions.getViolationData();
+        if(res.getFirst().isEmpty())
+            violationData.getEntries().addAll(Arrays.asList(res.getSecond()));
+        else
+            violationData.getEntries().add("error");
     }
 
     private void fillChoiceList()
@@ -176,6 +193,35 @@ public class MainController
 
     private void setupActions()
     {
+        closeViolation.setOnAction(e -> {
+            val violation = violationData.getText();
+
+            if(violation.split(";").length != 7)
+            {
+                showError(root, "Invalid violation data!");
+                return;
+            }
+
+            try
+            {
+                val arr = violation.split(";");
+                val bookID = Integer.parseInt(arr[0].split(" ")[1]);
+                val hallID = Integer.parseInt(arr[2].split(" ")[2]);
+                val cardID = Integer.parseInt(arr[1].split(" ")[2]);
+                var date = "TO_DATE('" + arr[3].split(" ")[2] + "', 'yyyy-mm-dd')";
+                val bookRet = bookReturned.isSelected() ? 1 : 0;
+
+                val res = DBCore.callProcedure("CLOSE_VIOLATION(" + bookID + ", " + hallID + ", " + cardID + ", " + date + ", " + bookRet + ")");
+                if(res.isEmpty())
+                    Dialogs.showDefaultAlert(root, "Success!", "Violation closed!", Alert.AlertType.INFORMATION);
+                else
+                    showError(root, res);
+            }catch (Throwable ex) {
+                ex.printStackTrace();
+                showError(root, "Invalid violation data!");
+            }
+        });
+
         bookNameOnViolation.textProperty().addListener((observable, oldValue, newValue) -> {
             val book = bookNameOnViolation.getText();
             val cont = bookNameOnViolation.getEntries().stream().anyMatch(v -> v.equals(book));
@@ -212,13 +258,13 @@ public class MainController
 
             val dateStr = date.toString();
 
-            if(user.trim().split(":").length < 2)
+            if(user.trim().split(":").length != 2)
             {
                 showError(root, "Invalid user field!");
                 return;
             }
 
-            if(book.trim().split(":").length < 3)
+            if(book.trim().split(":").length != 3)
             {
                 showError(root, "Invalid book field!");
                 return;
@@ -250,13 +296,13 @@ public class MainController
             val book = bookNameOnGiving.getText();
             val date = dateMustReturningOnGiving.getValue();
 
-            if(user.trim().isEmpty() || user.trim().split(":").length < 2)
+            if(user.trim().isEmpty() || user.trim().split(":").length != 2)
             {
                 showError(root, "Invalid user field!");
                 return;
             }
 
-            if(book.trim().isEmpty() || book.trim().split(":").length < 3)
+            if(book.trim().isEmpty() || book.trim().split(":").length != 3)
             {
                 showError(root, "Invalid book field!");
                 return;
@@ -290,13 +336,13 @@ public class MainController
             val user = userFIOOnReturning.getText();
             val book = bookNameOnReturning.getText();
 
-            if(user.trim().isEmpty() || user.trim().split(":").length < 2)
+            if(user.trim().isEmpty() || user.trim().split(":").length != 2)
             {
                 showError(root, "Invalid user field!");
                 return;
             }
 
-            if(book.trim().isEmpty() || book.trim().split(":").length < 3)
+            if(book.trim().isEmpty() || book.trim().split(":").length != 3)
             {
                 showError(root, "Invalid book field!");
                 return;
@@ -319,7 +365,7 @@ public class MainController
                 showError(root, res);
         });
 
-        userFIOOnGiving.setOnAction(e -> {
+        userFIOOnGiving.setOnKeyReleased(e -> {
             if(userFIOOnGiving.getEntries().isEmpty())
             {
                 val res = DBActions.getUsersListForBook();
@@ -330,7 +376,7 @@ public class MainController
             }
         });
 
-        bookNameOnGiving.setOnAction(e -> {
+        bookNameOnGiving.setOnKeyReleased(e -> {
             if(bookNameOnGiving.getEntries().isEmpty())
             {
                 val res = DBActions.getBooksList();
@@ -341,8 +387,21 @@ public class MainController
             }
         });
 
-        userFIOOnReturning.setOnAction(userFIOOnGiving.getOnAction());
-        bookNameOnReturning.setOnAction(bookNameOnGiving.getOnAction());
+        violationData.setOnKeyReleased(e -> {
+            if(violationData.getEntries().isEmpty())
+            {
+                val res = DBActions.getViolationData();
+                if(!res.getFirst().isEmpty())
+                    return;
+
+                violationData.getEntries().addAll(Arrays.asList(res.getSecond()));
+            }
+        });
+
+        userFIOOnReturning.setOnKeyReleased(userFIOOnGiving.getOnKeyReleased());
+        bookNameOnReturning.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
+        userFIOOnViolation.setOnKeyReleased(userFIOOnGiving.getOnKeyReleased());
+        bookNameOnViolation.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
 
         refreshTableData.setOnAction(e -> {
             val names = getTableNames(root);

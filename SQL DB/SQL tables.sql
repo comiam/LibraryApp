@@ -240,6 +240,7 @@ CREATE TABLE  "BOOKS"
 	"NAME" VARCHAR2(60) NOT NULL ENABLE, 
 	"AUTHOR" VARCHAR2(60) NOT NULL ENABLE, 
 	"YEAR_OF_PUBL" DATE NOT NULL ENABLE, 
+	"COST" NUMBER, 
 	 CONSTRAINT "BOOKS_PK" PRIMARY KEY ("ID") ENABLE, 
 	 CONSTRAINT "BOOKS_UK2" UNIQUE ("NAME", "AUTHOR", "YEAR_OF_PUBL") ENABLE
    )
@@ -263,8 +264,8 @@ declare
     rowcnt number(6);
     rowcntt number(6);
 begin
-    select count(*) into rowcnt  from VIOLATIONS where BOOK_ID = :old.ID and violation_date < CURRENT_DATE and IS_CLOSED = 0;
-    select count(*) into rowcntt from ACCEPTING_RETURNING_BOOKS where BOOK_ID = :old.ID and DATE_ACCEPTING < CURRENT_DATE and RETURN_DATE is NULL;
+    select count(*) into rowcnt  from VIOLATIONS where BOOK_ID = :old.ID and violation_date <= CURRENT_DATE and IS_CLOSED = 0;
+    select count(*) into rowcntt from ACCEPTING_RETURNING_BOOKS where BOOK_ID = :old.ID and DATE_ACCEPTING <= CURRENT_DATE and RETURN_DATE is NULL;
 
     if rowcnt + rowcntt > 0 then
         RAISE_APPLICATION_ERROR(-20010, 'Not all the books were returned to the library!');

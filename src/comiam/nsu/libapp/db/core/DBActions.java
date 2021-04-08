@@ -11,6 +11,46 @@ import static comiam.nsu.libapp.db.core.DBCore.*;
 
 public class DBActions
 {
+    public static Pair<String, String[]> getViolationData()
+    {
+        var res = makeRequest("select V.BOOK_ID, V.CARD_ID, V.HALL_ID, V.VIOLATION_DATE, V.VIOLATION_TYPE, H.SURNAME, H.FIRST_NAME, H.PATRONYMIC, B.NAME from VIOLATIONS V\n" +
+                " inner join READER_CARD RC on V.CARD_ID = RC.ID\n" +
+                " inner join HUMAN H on H.ID = RC.HUMAN_ID\n" +
+                " inner join BOOKS B on B.ID = V.BOOK_ID", true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Can't get violations: " + res.getErrorMsg(), null);
+
+        String[] data;
+        try
+        {
+            val rs = res.getSet();
+
+            int rows = rs.last() ? rs.getRow() : 0;
+            rs.beforeFirst();
+            int columns = rs.getMetaData().getColumnCount();
+            data = new String[rows];
+
+            int rowI = 0;
+            val row = new String[columns];
+            while(rs.next())
+            {
+                for(int i = 1; i <= columns; i++)
+                    row[i - 1] = i == 4 ? rs.getString(i).split(" ")[0] : rs.getString(i);
+
+                data[rowI] = String.format("book %s; card %s; hall %s; date %s; type %s; FIO %s; book name %s",
+                        row[0], row[1], row[2], row[3], row[4], row[5] + " " + row[6] + (row[7] == null ? "" : " " + row[7]), row[8]);
+                rowI++;
+            }
+        }catch (SQLException e) {
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
+        }
+
+        return new Pair<>("", data);
+    }
+
     public static Pair<String, String> getBookCost(String bookID)
     {
         var res = makeRequest("select COST from BOOKS where ID = " + bookID, true, false);
