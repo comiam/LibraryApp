@@ -23,6 +23,8 @@ public class MainController
     @FXML
     private VBox givingBookBox;
     @FXML
+    private VBox returningBookBox;
+    @FXML
     private ChoiceBox<String> tables;
     @FXML
     private ScrollPane tablePanel;
@@ -38,6 +40,8 @@ public class MainController
     private Button addNewUser;
     @FXML
     private Button giveBook;
+    @FXML
+    private Button returnBook;
     @FXML
     private TableColumn<PersonCard, String> IDColumn;
     @FXML
@@ -59,23 +63,29 @@ public class MainController
     @FXML
     private Label markTF2;
     @FXML
+    private Label markTF3;
+    @FXML
+    private Label markTF4;
+    @FXML
     private TableView<PersonCard> cardTable;
     @FXML
     private DatePicker dateMustReturningOnGiving;
 
     private AutoCompleteTextField userFIOOnGiving;
     private AutoCompleteTextField bookNameOnGiving;
+    private AutoCompleteTextField userFIOOnReturning;
+    private AutoCompleteTextField bookNameOnReturning;
 
     @Setter
     private Stage root;
+    @Setter
+    private int hallID;
 
     private String selectedTableName;
 
-    //TODO add hall selector on starting program and write value there
-    private int hallID = 1;
 
     @FXML
-    public void initialize()
+    private void initialize()
     {
         insertAutocompleteTextFiled();
         setupColumns();
@@ -90,13 +100,23 @@ public class MainController
         pane.add(pane.indexOf(markTF1) + 1, (userFIOOnGiving = new AutoCompleteTextField()));
         pane.add(pane.indexOf(markTF2) + 1, (bookNameOnGiving = new AutoCompleteTextField()));
 
+        val pane2 = returningBookBox.getChildren();
+        pane2.add(pane2.indexOf(markTF3) + 1, (userFIOOnReturning = new AutoCompleteTextField()));
+        pane2.add(pane2.indexOf(markTF4) + 1, (bookNameOnReturning = new AutoCompleteTextField()));
+
         var res = DBActions.getUsersListForBook();
         if(res.getFirst().isEmpty())
+        {
             userFIOOnGiving.getEntries().addAll(Arrays.asList(res.getSecond()));
+            userFIOOnReturning.getEntries().addAll(Arrays.asList(res.getSecond()));
+        }
 
         res = DBActions.getBooksList();
         if(res.getFirst().isEmpty())
+        {
             bookNameOnGiving.getEntries().addAll(Arrays.asList(res.getSecond()));
+            bookNameOnReturning.getEntries().addAll(Arrays.asList(res.getSecond()));
+        }
     }
 
     private void fillDataTableList()
@@ -133,8 +153,8 @@ public class MainController
             }
 
             val dateStr = date.toString();
-            int cardID = 0;
-            int bookID = 0;
+            int cardID;
+            int bookID;
             try
             {
                 cardID = Integer.parseInt(user.trim().split(":")[1].trim());
@@ -146,6 +166,39 @@ public class MainController
             val res = DBCore.callProcedure("GET_BOOK(" + bookID + ", " + hallID + ", " + cardID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'))");
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Success!", "The book can be handed in!", Alert.AlertType.INFORMATION);
+            else
+                showError(root, res);
+        });
+
+        returnBook.setOnAction(e -> {
+            val user = userFIOOnReturning.getText();
+            val book = bookNameOnReturning.getText();
+
+            if(user.trim().isEmpty() || user.trim().split(":").length < 2)
+            {
+                showError(root, "Invalid user field!");
+                return;
+            }
+
+            if(book.trim().isEmpty() || book.trim().split(":").length < 3)
+            {
+                showError(root, "Invalid book field!");
+                return;
+            }
+
+            int cardID;
+            int bookID;
+            try
+            {
+                cardID = Integer.parseInt(user.trim().split(":")[1].trim());
+                bookID = Integer.parseInt(book.trim().split(":")[0].trim());
+            }catch (Throwable ex) {
+                showError(root, "Invalid values in user or book fields!");
+                return;
+            }
+            val res = DBCore.callProcedure("RETURN_BOOK(" + bookID + ", " + hallID + ", " + cardID + ")");
+            if(res.isEmpty())
+                Dialogs.showDefaultAlert(root, "Success!", "The book can be returned!", Alert.AlertType.INFORMATION);
             else
                 showError(root, res);
         });
@@ -171,6 +224,9 @@ public class MainController
                 bookNameOnGiving.getEntries().addAll(Arrays.asList(res.getSecond()));
             }
         });
+
+        userFIOOnReturning.setOnAction(userFIOOnGiving.getOnAction());
+        bookNameOnReturning.setOnAction(bookNameOnGiving.getOnAction());
 
         refreshTableData.setOnAction(e -> {
             val names = getTableNames(root);

@@ -45,7 +45,7 @@ public class WindowLoader
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(MainController.class.getResource("AssistantFormWindow.fxml"));
             Parent root = loader.load();
-            AssistantFormWindow controller = loader.getController();
+            AssistantFormController controller = loader.getController();
 
             controller.setHumanID(humanID);
             controller.setRoot(newWindow);
@@ -74,7 +74,7 @@ public class WindowLoader
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(MainController.class.getResource("SPOFormWindow.fxml"));
             Parent root = loader.load();
-            SPOFormWindow controller = loader.getController();
+            SPOFormController controller = loader.getController();
 
             controller.setHumanID(humanID);
             controller.setRoot(newWindow);
@@ -103,7 +103,7 @@ public class WindowLoader
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(MainController.class.getResource("StudentFormWindow.fxml"));
             Parent root = loader.load();
-            StudentFormWindow controller = loader.getController();
+            StudentFormController controller = loader.getController();
 
             controller.setHumanID(humanID);
             controller.setRoot(newWindow);
@@ -132,7 +132,7 @@ public class WindowLoader
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(MainController.class.getResource("TeacherFormWindow.fxml"));
             Parent root = loader.load();
-            TeacherFormWindow controller = loader.getController();
+            TeacherFormController controller = loader.getController();
 
             controller.setHumanID(humanID);
             controller.setRoot(newWindow);
@@ -185,7 +185,39 @@ public class WindowLoader
         }
     }
 
-    public static void loadMainWindow(String name)
+    public static void loadHallSelectorWindow(String name)
+    {
+        try
+        {
+            Stage newWindow = new Stage();
+
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(MainController.class.getResource("HallSelectorWindow.fxml"));
+            Parent root = loader.load();
+            HallSelectorController controller = loader.getController();
+            controller.setRoot(newWindow);
+            controller.setUserName(name);
+
+            newWindow.setTitle(name);
+            newWindow.setResizable(false);
+            newWindow.setScene(new Scene(root, 305, 86));
+            newWindow.centerOnScreen();
+
+            newWindow.setOnCloseRequest(e -> {
+                DBCore.closeCurrentSession();
+                Platform.exit();
+            });
+
+            newWindow.show();
+        }catch(Throwable e)
+        {
+            showExceptionDialog(null, e);
+            Platform.exit();
+            System.exit(1);
+        }
+    }
+
+    public static void loadMainWindow(String name, int hallID)
     {
         try
         {
@@ -196,6 +228,7 @@ public class WindowLoader
             Parent root = loader.load();
             MainController controller = loader.getController();
             controller.setRoot(newWindow);
+            controller.setHallID(hallID);
 
             newWindow.setTitle(name);
             newWindow.setResizable(false);

@@ -14,7 +14,7 @@ import lombok.val;
 import static comiam.nsu.libapp.util.GUIUtils.showError;
 import static comiam.nsu.libapp.util.StringChecker.checkStrArgs;
 
-public class SPOFormWindow
+public class AssistantFormController
 {
     @FXML
     private ChoiceBox<String> sub0;
@@ -51,7 +51,7 @@ public class SPOFormWindow
         boolean isEmptyData = false;
         if(isEditingUser)
         {
-            val res = DBActions.getRowInfoFrom(humanID, "HUMAN_ID", "SPO");
+            val res = DBActions.getRowInfoFrom(humanID, "HUMAN_ID", "ASSISTANT");
 
             isEmptyData = res.getFirst().equals("empty");
             if(!isEmptyData && showError(root, res.getFirst()))
@@ -72,16 +72,16 @@ public class SPOFormWindow
 
             if(!isEditingUser)
             {
-                if(!showError(root, DBActions.createNewSPO(humanID, s0)))
+                if(!showError(root, DBActions.createNewAssistant(humanID, s0)))
                 {
-                    Dialogs.showDefaultAlert(root, "Success!", "SPO updated successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Success!", "Assistant created successfully!", Alert.AlertType.INFORMATION);
                     root.close();
                 }
             }else
             {
-                if(!showError(root, DBActions.updateSPO(humanID, s0, finalIsEmptyData)))
+                if(!showError(root, DBActions.updateAssistant(humanID, s0, finalIsEmptyData)))
                 {
-                    Dialogs.showDefaultAlert(root, "Success!", "SPO updated successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Success!", "Assistant updated successfully!", Alert.AlertType.INFORMATION);
                     root.close();
                 }
             }

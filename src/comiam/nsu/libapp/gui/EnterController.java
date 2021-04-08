@@ -22,7 +22,7 @@ public class EnterController
     private Stage root;
 
     @FXML
-    public void initialize()
+    private void initialize()
     {
         login.setText("18209_bolshim");
         password.setText("sefsefgth");//can access this shit
@@ -55,7 +55,7 @@ public class EnterController
                 root.close();
 
                 Dialogs.showDefaultAlert(null, "Success!", "Welcome, " + log.trim() + "!", Alert.AlertType.INFORMATION);
-                WindowLoader.loadMainWindow(log.trim());
+                WindowLoader.loadHallSelectorWindow(log.trim());
             }else
                 Dialogs.showDefaultAlert(root, "Error!", result, Alert.AlertType.ERROR);
         }

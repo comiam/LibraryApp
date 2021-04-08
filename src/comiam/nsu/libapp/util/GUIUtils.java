@@ -49,15 +49,23 @@ public class GUIUtils
             return false;
     }
 
+    public static ObservableList<String> getHalls(Stage root)
+    {
+        val data = DBActions.getHallNames();
+
+        if(showError(root, data.getFirst()))
+            return null;
+
+        return FXCollections.observableArrayList(data.getSecond());
+    }
+
     public static ObservableList<String> getTypeNames(Stage root)
     {
         val data = DBActions.getTypeNames();
 
-        if(!data.getFirst().isEmpty() && data.getSecond() == null)
-        {
-            Dialogs.showDefaultAlert(root, "Error!", "Can't refresh tables! Error: " + data.getFirst(), Alert.AlertType.ERROR);
+        if(showError(root, data.getFirst()))
             return null;
-        }
+
         return FXCollections.observableArrayList(data.getSecond());
     }
 
@@ -65,11 +73,9 @@ public class GUIUtils
     {
         val data = DBActions.getTableNames();
 
-        if(!data.getFirst().isEmpty() && data.getSecond() == null)
-        {
-            Dialogs.showDefaultAlert(root, "Error!", "Can't refresh tables! Error: " + data.getFirst(), Alert.AlertType.ERROR);
+        if(showError(root, data.getFirst()))
             return null;
-        }
+
         return FXCollections.observableArrayList(data.getSecond());
     }
 
@@ -77,11 +83,8 @@ public class GUIUtils
     {
         val res = DBActions.getTableOfCardData();
 
-        if(!res.getFirst().isEmpty() || res.getSecond() == null)
-        {
-            Dialogs.showDefaultAlert(root, "Error!", "Can't load table of reader cards!\nError: " + res.getFirst(), Alert.AlertType.ERROR);
+        if(showError(root, res.getFirst()))
             return null;
-        }
 
         val table = res.getSecond();
         val cards = new ArrayList<PersonCard>();
@@ -101,11 +104,8 @@ public class GUIUtils
     {
         val res = DBActions.getTableValues(tableName);
 
-        if(!res.getFirst().isEmpty() || res.getSecond() == null)
-        {
-            Dialogs.showDefaultAlert(root, "Error!", "Can't load table + " + tableName + "!\nError: " + res.getFirst(), Alert.AlertType.ERROR);
+        if(showError(root, res.getFirst()))
             return null;
-        }
 
         val table = res.getSecond();
         val tableView = new TableView<String[]>();

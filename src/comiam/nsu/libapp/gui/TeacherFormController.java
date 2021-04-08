@@ -14,7 +14,7 @@ import lombok.val;
 import static comiam.nsu.libapp.util.GUIUtils.showError;
 import static comiam.nsu.libapp.util.StringChecker.checkStrArgs;
 
-public class TeacherFormWindow
+public class TeacherFormController
 {
     @FXML
     private ChoiceBox<String> grade;

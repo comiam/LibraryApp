@@ -67,45 +67,55 @@ BEGIN
 	commit;
 EXCEPTION
 WHEN OTHERS THEN
-   raise_application_error(-20010,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
+   raise_application_error(-20010,SQLERRM);
 END;
 
 ------------------------------------------------------------------------------------------------
 
-CREATE OR REPLACE procedure return_book(BOOK_ID IN NUMBER, HALL_ID IN NUMBER, CARD_ID IN NUMBER)
+CREATE OR REPLACE procedure return_book(BOOK_ID_V IN NUMBER, HALL_ID_V IN NUMBER, CARD_ID_V IN NUMBER)
 IS
 	cnt NUMBER;
 BEGIN
-	select count(*) into cnt from ACCEPTING_RETURNING_BOOKS arb where arb.BOOK_ID = BOOK_ID and arb.HALL_ID = HALL_ID and arb.CARD_ID = CARD_ID and DATE_ACCEPTING <= CURRENT_DATE and DATE_MUST_RETURNING <= CURRENT_DATE and RETURN_DATE is NULL and LOST_BOOK = 0;
+    select count(*) into cnt from READER_CARD rd where rd.ID = CARD_ID_V;
 
 	if cnt = 0 then
-		select count(*) into cnt from VIOLATIONS v where v.BOOK_ID = BOOK_ID and v.HALL_ID = HALL_ID and v.CARD_ID = CARD_ID and v.VIOLATION_DATE <= CURRENT_DATE and v.IS_CLOSED = 0;
+		RAISE_APPLICATION_ERROR(-20010, 'We havent this user!');
+	end if;
+
+	select count(*) into cnt from BOOKS hs where hs.ID = BOOK_ID_V;
+
+	if cnt = 0 then
+		RAISE_APPLICATION_ERROR(-20010, 'We havent this book in library!');
+	end if;
+
+	select count(*) into cnt from ACCEPTING_RETURNING_BOOKS arb where arb.BOOK_ID = BOOK_ID_V and arb.HALL_ID = HALL_ID_V and arb.CARD_ID = CARD_ID_V and DATE_ACCEPTING <= CURRENT_DATE and DATE_MUST_RETURNING >= CURRENT_DATE and RETURN_DATE is NULL and LOST_BOOK = 0;
+
+	if cnt = 0 then
+		select count(*) into cnt from VIOLATIONS v where v.BOOK_ID = BOOK_ID_V and v.HALL_ID = HALL_ID_V and v.CARD_ID = CARD_ID_V and v.VIOLATION_DATE <= CURRENT_DATE and v.IS_CLOSED = 0;
 
 		if cnt != 0 then
 			RAISE_APPLICATION_ERROR(-20010, 'The book is either already considered lost, close the violation issue!');
 		else
-			select count(*) into cnt from ACCEPTING_RETURNING_BOOKS arb where arb.BOOK_ID = BOOK_ID and arb.HALL_ID != HALL_ID and arb.CARD_ID = CARD_ID and DATE_ACCEPTING <= CURRENT_DATE and DATE_MUST_RETURNING <= CURRENT_DATE and RETURN_DATE is NULL and LOST_BOOK = 0;
+			select count(*) into cnt from ACCEPTING_RETURNING_BOOKS arb where arb.BOOK_ID = BOOK_ID_V and arb.HALL_ID != HALL_ID_V and arb.CARD_ID = CARD_ID_V and DATE_ACCEPTING <= CURRENT_DATE and DATE_MUST_RETURNING >= CURRENT_DATE and RETURN_DATE is NULL and LOST_BOOK = 0;
 
-			if cnt != 0 then
+			if cnt > 0 then
 				RAISE_APPLICATION_ERROR(-20010, 'Hand over the book in the department where it was issued!');
 			else
-				RAISE_APPLICATION_ERROR(-20010, 'Book it is not registered in the library!');
+				RAISE_APPLICATION_ERROR(-20010, 'This book didnt give up!');
 			end if;
 		end if;
 	end if;
 
-	update HALL_STORAGE hs SET COUNT = COUNT + 1 where hs.HALL_ID = HALL_ID and hs.BOOK_ID = BOOK_ID;
+	update HALL_STORAGE hs SET COUNT = COUNT + 1 where hs.HALL_ID = HALL_ID_V and hs.BOOK_ID = BOOK_ID_V;
+	update MA_ORDER mao SET RETURN_STATE = 1, RETURN_DATE = CURRENT_DATE where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V;
+	update ACCEPTING_RETURNING_BOOKS arb set RETURN_DATE = CURRENT_DATE where arb.BOOK_ID = BOOK_ID_V and arb.HALL_ID = HALL_ID_V and arb.CARD_ID = CARD_ID_V and DATE_ACCEPTING <= CURRENT_DATE and DATE_MUST_RETURNING >= CURRENT_DATE and RETURN_DATE is NULL and LOST_BOOK = 0;
 
-	update MA_ORDER mao SET RETURN_STATE = 1, RETURN_DATE = CURRENT_DATE where BOOK_ID = mao.BOOK_ID and mao.CARD_ID = CARD_ID;
-
-	update ACCEPTING_RETURNING_BOOKS arb set RETURN_DATE = CURRENT_DATE where arb.BOOK_ID = BOOK_ID and arb.HALL_ID = HALL_ID and arb.CARD_ID = CARD_ID and DATE_ACCEPTING <= CURRENT_DATE and DATE_MUST_RETURNING <= CURRENT_DATE and RETURN_DATE is NULL and LOST_BOOK = 0;
-
-	rereg_reader(CARD_ID);
+	rereg_reader(CARD_ID_V);
 
 	commit;
 EXCEPTION
 WHEN OTHERS THEN
-   raise_application_error(-20010,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
+   raise_application_error(-20010,SQLERRM);
 END;
 
 ------------------------------------------------------------------------------------------------

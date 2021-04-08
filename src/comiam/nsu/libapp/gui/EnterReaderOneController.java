@@ -38,7 +38,7 @@ public class EnterReaderOneController
     String type;
 
     @FXML
-    public void initialize()
+    private void initialize()
     {
         val types = GUIUtils.getTypeNames(root);
 

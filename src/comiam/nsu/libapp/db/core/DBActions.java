@@ -11,6 +11,40 @@ import static comiam.nsu.libapp.db.core.DBCore.*;
 
 public class DBActions
 {
+    public static Pair<String, String[]> getHallNames()
+    {
+        var res = makeRequest("select LH.ID, HT.ID_NAME from LIBRARY_HALLS LH inner join HALL_TYPE HT on HT.ID_NAME = LH.HALL_TYPE_ID", true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Can't get halls list: " + res.getErrorMsg(), null);
+
+        String[] data = null;
+        try
+        {
+            val rs = res.getSet();
+
+            int rows = rs.last() ? rs.getRow() : 0;
+            rs.beforeFirst();
+            int columns = rs.getMetaData().getColumnCount();
+            data = new String[rows];
+
+            int rowI = 0;
+            while(rs.next())
+            {
+                data[rowI] = "";
+                for(int i = 1; i <= columns; i++)
+                    data[rowI] += (i == 1 ? "" : ": ") + rs.getString(i);
+                rowI++;
+            }
+        }catch (SQLException e) {
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
+        }
+
+        return new Pair<>("", data);
+    }
+
     public static Pair<String, String[]> getBooksList()
     {
         var res = makeRequest("select ID, NAME, YEAR_OF_PUBL from BOOKS", true, false);
@@ -335,7 +369,7 @@ public class DBActions
                 " inner join READER_TYPE RT on H.TYPE_ID = RT.ID", true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Failed request! Try again!\nError: " + res.getErrorMsg(), null);
+            return new Pair<>("Can't load table of reader cards: " + res.getErrorMsg(), null);
 
         String[][] data;
         try
@@ -370,7 +404,7 @@ public class DBActions
         val res = makeRequest("select * from " + table.trim(), true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Failed request! Try again!\nError: " + res.getErrorMsg(), null);
+            return new Pair<>("Can't get rows of selected table: " + res.getErrorMsg(), null);
 
         String[][] data;
         try
@@ -411,7 +445,7 @@ public class DBActions
         val res = makeRequest("select NAME from READER_TYPE", true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Failed request! Try again!\nError: " + res.getErrorMsg(), null);
+            return new Pair<>("Can't get reader types: " + res.getErrorMsg(), null);
 
         String[] names;
         try
@@ -442,7 +476,7 @@ public class DBActions
         val res = makeRequest("select table_name from user_tables", true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Failed request! Try again!\nError: " + res.getErrorMsg(), null);
+            return new Pair<>("Can't get table names list: " + res.getErrorMsg(), null);
 
         String[] names;
         try
