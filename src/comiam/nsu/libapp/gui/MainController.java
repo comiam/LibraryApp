@@ -34,6 +34,10 @@ public class MainController
     @FXML
     private VBox violationClosingBox;
     @FXML
+    private VBox addBookBatchBox;
+    @FXML
+    private VBox removeBookBatchBox;
+    @FXML
     private TabPane mainPane;
     @FXML
     private ChoiceBox<String> tables;
@@ -61,6 +65,12 @@ public class MainController
     private Button closeViolation;
     @FXML
     private Button refreshBookStorage;
+    @FXML
+    private Button refreshBookStorageAccounting;
+    @FXML
+    private Button addNewBookBatch;
+    @FXML
+    private Button removeBookBatch;
 
     @FXML
     private TableView<PersonCard> cardTable;
@@ -122,6 +132,13 @@ public class MainController
     @FXML
     private Label markTF7;
     @FXML
+    private Label markTF8;
+    @FXML
+    private Label markTF9;
+    @FXML
+    private Label markTF10;
+
+    @FXML
     private DatePicker dateMustReturningOnGiving;
     @FXML
     private DatePicker violationDate;
@@ -130,10 +147,15 @@ public class MainController
     @FXML
     private TextField monFine;
     @FXML
+    private TextField bookAddCount;
+    @FXML
+    private TextField bookRemoveCount;
+    @FXML
+    private CheckBox deleteAllBooks;
+    @FXML
     private CheckBox bookReturned;
     @FXML
     private Tab orderMA;
-
 
     private AutoCompleteTextField userFIOOnGiving;
     private AutoCompleteTextField bookNameOnGiving;
@@ -142,6 +164,8 @@ public class MainController
     private AutoCompleteTextField userFIOOnViolation;
     private AutoCompleteTextField bookNameOnViolation;
     private AutoCompleteTextField violationData;
+    private AutoCompleteTextField bookNameOnAddToStore;
+    private AutoCompleteTextField bookNameOnRemovingFromStore;
 
     @Setter
     private Stage root;
@@ -205,20 +229,30 @@ public class MainController
         val pane4 = violationClosingBox.getChildren();
         pane4.add(pane4.indexOf(markTF7) + 1, (violationData = new AutoCompleteTextField()));
 
+        val pane5 = addBookBatchBox.getChildren();
+        pane5.add(pane5.indexOf(markTF8) + 1, (bookNameOnAddToStore = new AutoCompleteTextField()));
+
+        val pane6 = removeBookBatchBox.getChildren();
+        pane6.add(pane6.indexOf(markTF9) + 1, (bookNameOnRemovingFromStore = new AutoCompleteTextField()));
+
         var res = DBActions.getUsersListForBook();
         if(res.getFirst().isEmpty())
         {
-            userFIOOnGiving.getEntries().addAll(Arrays.asList(res.getSecond()));
-            userFIOOnReturning.getEntries().addAll(Arrays.asList(res.getSecond()));
-            userFIOOnViolation.getEntries().addAll(Arrays.asList(res.getSecond()));
+            val arr = Arrays.asList(res.getSecond());
+            userFIOOnGiving.getEntries().addAll(arr);
+            userFIOOnReturning.getEntries().addAll(arr);
+            userFIOOnViolation.getEntries().addAll(arr);
         }
 
         res = DBActions.getBooksList();
         if(res.getFirst().isEmpty())
         {
-            bookNameOnGiving.getEntries().addAll(Arrays.asList(res.getSecond()));
-            bookNameOnReturning.getEntries().addAll(Arrays.asList(res.getSecond()));
-            bookNameOnViolation.getEntries().addAll(Arrays.asList(res.getSecond()));
+            val arr = Arrays.asList(res.getSecond());
+            bookNameOnGiving.getEntries().addAll(arr);
+            bookNameOnReturning.getEntries().addAll(arr);
+            bookNameOnViolation.getEntries().addAll(arr);
+            bookNameOnAddToStore.getEntries().addAll(arr);
+            bookNameOnRemovingFromStore.getEntries().addAll(arr);
         }
         res = DBActions.getViolationData();
         if(res.getFirst().isEmpty())
@@ -239,7 +273,83 @@ public class MainController
 
     private void setupActions()
     {
+        deleteAllBooks.setOnAction(e -> {
+            bookRemoveCount.setEditable(!deleteAllBooks.isSelected());
+            bookRemoveCount.setDisable(deleteAllBooks.isSelected());
+            markTF10.setDisable(deleteAllBooks.isSelected());
+        });
+
+        removeBookBatch.setOnAction(e -> {
+            val book = bookNameOnRemovingFromStore.getText();
+            val count = bookRemoveCount.getText().trim();
+            val deleteAll = deleteAllBooks.isSelected();
+
+            if(count.isEmpty() && !deleteAll)
+            {
+                showError(root, "Invalid book count field!");
+                return;
+            }
+
+            if(book.trim().isEmpty() || book.trim().split(":").length != 3)
+            {
+                showError(root, "Invalid book field!");
+                return;
+            }
+
+            int bookCount;
+            int bookID;
+            try
+            {
+                bookCount = deleteAll ? 0 : Integer.parseInt(count);
+                bookID = Integer.parseInt(book.trim().split(":")[0].trim());
+            }catch (Throwable ex) {
+                showError(root, "Invalid values in count or book fields!");
+                return;
+            }
+
+            val res = DBCore.callProcedure("REMOVE_BOOK_FROM_HALL(" + bookID + ", " + hallID + ", " + bookCount + ", " + (deleteAll ? "1" : "0") + ")");
+            if(res.isEmpty())
+                Dialogs.showDefaultAlert(root, "Success!", "The books removed!", Alert.AlertType.INFORMATION);
+            else
+                showError(root, res);
+        });
+
+        addNewBookBatch.setOnAction(e -> {
+            val book = bookNameOnAddToStore.getText();
+            val count = bookAddCount.getText().trim();
+
+            if(count.isEmpty())
+            {
+                showError(root, "Invalid book count field!");
+                return;
+            }
+
+            if(book.trim().isEmpty() || book.trim().split(":").length != 3)
+            {
+                showError(root, "Invalid book field!");
+                return;
+            }
+
+            int bookCount;
+            int bookID;
+            try
+            {
+                bookCount = Integer.parseInt(count);
+                bookID = Integer.parseInt(book.trim().split(":")[0].trim());
+            }catch (Throwable ex) {
+                showError(root, "Invalid values in count or book fields!");
+                return;
+            }
+
+            val res = DBCore.callProcedure("ADD_BOOK_TO_HALL(" + bookID + ", " + hallID + ", " + bookCount + ")");
+            if(res.isEmpty())
+                Dialogs.showDefaultAlert(root, "Success!", "The books added!", Alert.AlertType.INFORMATION);
+            else
+                showError(root, res);
+        });
+
         refreshBookStorage.setOnAction(e -> refreshBookStorageTable());
+        refreshBookStorageAccounting.setOnAction(e -> refreshBookStorageAccountingTable());
 
         closeViolation.setOnAction(e -> {
             val violation = violationData.getText();
@@ -450,6 +560,8 @@ public class MainController
         bookNameOnReturning.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
         userFIOOnViolation.setOnKeyReleased(userFIOOnGiving.getOnKeyReleased());
         bookNameOnViolation.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
+        bookNameOnAddToStore.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
+        bookNameOnRemovingFromStore.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
 
         refreshTableData.setOnAction(e -> {
             val names = getTableNames(root);
@@ -531,6 +643,23 @@ public class MainController
         bookYearStoColumn.setCellValueFactory(new PropertyValueFactory<>("year"));
         bookAuthorStoColumn.setCellValueFactory(new PropertyValueFactory<>("author"));
         bookCountStoColumn.setCellValueFactory(new PropertyValueFactory<>("count"));
+
+        bookIDAccColumn.setCellValueFactory(new PropertyValueFactory<>("ID"));
+        bookNameAccColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        bookYearAccColumn.setCellValueFactory(new PropertyValueFactory<>("year"));
+        bookAccTimeOperationColumn.setCellValueFactory(new PropertyValueFactory<>("operationTime"));
+        bookAccOperation.setCellValueFactory(new PropertyValueFactory<>("operation"));
+        bookAccCountColumn.setCellValueFactory(new PropertyValueFactory<>("count"));
+    }
+
+    private void refreshBookStorageAccountingTable()
+    {
+        val data = GUIUtils.getBookStorageAccountingRows(root, hallID);
+
+        if(data == null)
+            return;
+
+        bookAccountingTable.setItems(data);
     }
 
     private void refreshBookStorageTable()

@@ -424,6 +424,43 @@ public class DBActions
         }
     }
 
+    public static Pair<String, String[][]> getTableBookStorageAccounting(int hallID)
+    {
+        val res = makeRequest("select B.ID, B.NAME, B.YEAR_OF_PUBL, BA.TIME, BA.OPERATION, BA.\"COUNT\"" +
+                " from BOOK_ACCOUNTING BA inner join BOOKS B on B.ID = BA.BOOK_ID" +
+                " where HALL_ID = " + hallID, true, false);
+
+        if(isBadResponse(res))
+            return new Pair<>("Can't load table of book storage accounting: " + res.getErrorMsg(), null);
+
+        String[][] data;
+        try
+        {
+            val rs = res.getSet();
+
+            int rows = rs.last() ? rs.getRow() : 0;
+            rs.beforeFirst();
+            int columns = rs.getMetaData().getColumnCount();
+
+            data = new String[rows][columns];
+
+            int rowI = 0;
+            while(rs.next())
+            {
+                for(int i = 1; i <= columns; i++)
+                    data[rowI][i - 1] = rs.getString(i);
+                rowI++;
+            }
+        }catch (SQLException e) {
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
+        }
+
+        return new Pair<>("", data);
+    }
+
     public static Pair<String, String[][]> getTableBookStorage(int hallID)
     {
         val res = makeRequest("select B.ID, B.NAME, B.YEAR_OF_PUBL, B.AUTHOR, HS.COUNT from BOOKS B\n" +

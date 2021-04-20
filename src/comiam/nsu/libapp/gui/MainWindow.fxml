@@ -259,16 +259,21 @@
                           <tabs>
                             <Tab text="История изменения склада">
                                  <content>
-                                    <TableView fx:id="bookAccountingTable" prefHeight="200.0" prefWidth="200.0">
-                                      <columns>
-                                        <TableColumn fx:id="bookIDAccColumn" prefWidth="35.0" text="ID" />
-                                        <TableColumn fx:id="bookNameAccColumn" prefWidth="207.0" text="Название книги" />
-                                          <TableColumn fx:id="bookYearAccColumn" prefWidth="91.0" text="Год издания" />
-                                          <TableColumn fx:id="bookAccTimeOperationColumn" prefWidth="91.0" text="Время" />
-                                          <TableColumn fx:id="bookAccOperation" prefWidth="98.0" text="Операция" />
-                                          <TableColumn fx:id="bookAccCountColumn" prefWidth="88.0" text="Количество" />
-                                      </columns>
-                                    </TableView>
+                                    <VBox prefHeight="200.0" prefWidth="100.0">
+                                       <children>
+                                          <Button fx:id="refreshBookStorageAccounting" mnemonicParsing="false" prefWidth="652.0" text="Обновить" />
+                                          <TableView fx:id="bookAccountingTable" prefHeight="411.0" prefWidth="603.0">
+                                             <columns>
+                                                <TableColumn fx:id="bookIDAccColumn" prefWidth="35.0" text="ID" />
+                                                <TableColumn fx:id="bookNameAccColumn" prefWidth="207.0" text="Название книги" />
+                                                <TableColumn fx:id="bookYearAccColumn" prefWidth="91.0" text="Год издания" />
+                                                <TableColumn fx:id="bookAccTimeOperationColumn" prefWidth="125.0" text="Время" />
+                                                <TableColumn fx:id="bookAccOperation" prefWidth="67.0" text="Операция" />
+                                                <TableColumn fx:id="bookAccCountColumn" prefWidth="76.0" text="Количество" />
+                                             </columns>
+                                          </TableView>
+                                       </children>
+                                    </VBox>
                                  </content>
                             </Tab>
                             <Tab text="Склад книг">
@@ -291,12 +296,55 @@
                             </Tab>
                               <Tab text="Добавить новую партию">
                                  <content>
-                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                    <VBox fx:id="addBookBatchBox" prefHeight="200.0" prefWidth="100.0">
+                                       <children>
+                                          <Label prefHeight="26.0" prefWidth="560.0" text="Добавить новую партию книг на склад зала:">
+                                             <font>
+                                                <Font size="17.0" />
+                                             </font>
+                                          </Label>
+                                          <Separator orientation="VERTICAL" prefHeight="33.0" prefWidth="0.0" />
+                                          <Label fx:id="markTF8" text="Введите книгу:">
+                                             <font>
+                                                <Font size="13.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="Введите количество:">
+                                             <font>
+                                                <Font size="13.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="bookAddCount" prefWidth="203.0" />
+                                          <Button fx:id="addNewBookBatch" mnemonicParsing="false" prefWidth="1238.0" text="Добавить" />
+                                       </children>
+                                    </VBox>
                                  </content>
                               </Tab>
                               <Tab text="Списать книгу">
                                  <content>
-                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                    <VBox fx:id="removeBookBatchBox" prefHeight="200.0" prefWidth="100.0">
+                                       <children>
+                                          <Label prefHeight="26.0" prefWidth="560.0" text="Списать книги из склада зала:">
+                                             <font>
+                                                <Font size="17.0" />
+                                             </font>
+                                          </Label>
+                                          <Separator orientation="VERTICAL" prefHeight="33.0" prefWidth="0.0" />
+                                          <Label fx:id="markTF9" text="Введите книгу:">
+                                             <font>
+                                                <Font size="13.0" />
+                                             </font>
+                                          </Label>
+                                          <Label fx:id="markTF10" text="Введите количество:">
+                                             <font>
+                                                <Font size="13.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="bookRemoveCount" prefWidth="203.0" />
+                                          <CheckBox fx:id="deleteAllBooks" mnemonicParsing="false" text="Списать все книги" />
+                                          <Button fx:id="removeBookBatch" mnemonicParsing="false" prefWidth="1238.0" text="Списать" />
+                                       </children>
+                                    </VBox>
                                  </content>
                               </Tab>
                           </tabs>

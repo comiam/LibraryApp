@@ -104,7 +104,7 @@ BEGIN
 	end if;
 
 	update HALL_STORAGE hs SET COUNT = COUNT + 1 where hs.HALL_ID = HALL_ID_V and hs.BOOK_ID = BOOK_ID_V;
-	update MA_ORDER mao SET RETURN_STATE = 1, RETURN_DATE = CURRENT_DATE where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V;
+	update MA_ORDER mao SET RETURN_DATE = CURRENT_DATE where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V;
 	update ACCEPTING_RETURNING_BOOKS arb set RETURN_DATE = CURRENT_DATE where arb.BOOK_ID = BOOK_ID_V and arb.HALL_ID = HALL_ID_V and arb.CARD_ID = CARD_ID_V and DATE_ACCEPTING <= CURRENT_DATE and DATE_MUST_RETURNING >= CURRENT_DATE and RETURN_DATE is NULL and LOST_BOOK = 0;
 
 	rereg_reader(CARD_ID_V);
@@ -185,3 +185,48 @@ WHEN OTHERS THEN
 END;
 
 ------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE procedure add_book_to_hall(BOOK_ID_V IN NUMBER, HALL_ID_V IN NUMBER, COUNT_V IN NUMBER)
+IS
+	cnt NUMBER;
+BEGIN
+	select count(*) into cnt from HALL_STORAGE where HALL_ID = HALL_ID_V and BOOK_ID = BOOK_ID_V;
+
+	if cnt = 0 then
+		insert into HALL_STORAGE values (HALL_ID_V, BOOK_ID_V, COUNT_V);
+	else
+	    update HALL_STORAGE set COUNT = COUNT + COUNT_V where BOOK_ID = BOOK_ID_V and HALL_ID = HALL_ID_V;
+	end if;
+
+	insert into BOOK_ACCOUNTING values (BOOK_ID_V, HALL_ID_V, CURRENT_DATE, 'add', COUNT_V);
+
+	commit;
+END;
+
+------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE procedure remove_book_from_hall(BOOK_ID_V IN NUMBER, HALL_ID_V IN NUMBER, COUNT_V IN NUMBER, DELETE_ALL IN NUMBER)
+IS
+	cnt NUMBER;
+BEGIN
+	select count(*) into cnt from HALL_STORAGE where HALL_ID = HALL_ID_V and BOOK_ID = BOOK_ID_V;
+
+	if cnt = 0 then
+		RAISE_APPLICATION_ERROR(-20010, 'we havent this book in storage!');
+	else
+	    select "COUNT" into cnt from HALL_STORAGE where HALL_ID = HALL_ID_V and BOOK_ID = BOOK_ID_V;
+
+	    if cnt < COUNT_V and DELETE_ALL = 0 then
+            RAISE_APPLICATION_ERROR(-20010, 'There are fewer books in the storage than you want to write out!');
+        end if;
+
+	    if DELETE_ALL > 0 then
+            delete from HALL_STORAGE where HALL_ID = HALL_ID_V and BOOK_ID = BOOK_ID_V;
+            insert into BOOK_ACCOUNTING values (BOOK_ID_V, HALL_ID_V, CURRENT_DATE, 'del', cnt);
+        else
+	        update HALL_STORAGE set COUNT = COUNT - COUNT_V where BOOK_ID = BOOK_ID_V and HALL_ID = HALL_ID_V;
+	        insert into BOOK_ACCOUNTING values (BOOK_ID_V, HALL_ID_V, CURRENT_DATE, 'del', COUNT_V);
+        end if;
+	end if;
+	commit;
+END;
