@@ -11,4 +11,16 @@ public class StringChecker
                 return false;
         return true;
     }
+
+    public static boolean isInteger(String s)
+    {
+        try
+        {
+            Integer.parseInt(s);
+        } catch(Throwable e)
+        {
+            return false;
+        }
+        return true;
+    }
 }

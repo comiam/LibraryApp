@@ -8,7 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.stage.Stage;
 import lombok.Setter;
-import lombok.val;
+import lombok.var;
 
 import static comiam.nsu.libapp.util.GUIUtils.showError;
 
@@ -22,11 +22,36 @@ public class HallSelectorController
     private Stage root;
     @Setter
     private String userName;
+    @Setter
+    private int userID;
+    @Setter
+    private boolean isReaderUser;
 
     @FXML
     private void initialize()
     {
-        val data = GUIUtils.getHalls(root);
+        okBtn.setOnAction(e -> {
+            var hall = halls.getValue();
+
+            if(hall == null)
+            {
+                showError(root, "Please select hall!");
+                return;
+            }
+
+            root.close();
+
+            int hallID = hall.equals("Home") ? -1 : Integer.parseInt(hall.split(":")[0].trim());
+            if(isReaderUser)
+                WindowLoader.loadUserWindow(userName, hallID, userID);
+            else
+                WindowLoader.loadLibraryWindow(userName, hallID, hall.split(":")[1].trim().equals("intercol"));
+        });
+    }
+
+    public void postInit()
+    {
+        var data = GUIUtils.getHalls(root);
         if(data == null)
         {
             root.close();
@@ -36,17 +61,7 @@ public class HallSelectorController
         }
         halls.setItems(data);
 
-        okBtn.setOnAction(e -> {
-            val hall = halls.getValue();
-
-            if(hall == null)
-            {
-                showError(root, "Please select hall!");
-                return;
-            }
-
-            root.close();
-            WindowLoader.loadMainWindow(userName, Integer.parseInt(hall.split(":")[0].trim()), hall.split(":")[1].trim().equals("intercol"));
-        });
+        if(isReaderUser)
+            data.add("Home");
     }
 }

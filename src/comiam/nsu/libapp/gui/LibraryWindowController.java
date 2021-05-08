@@ -2,9 +2,9 @@ package comiam.nsu.libapp.gui;
 
 import comiam.nsu.libapp.db.core.DBActions;
 import comiam.nsu.libapp.db.core.DBCore;
-import comiam.nsu.libapp.db.objects.BookOperationCard;
+import comiam.nsu.libapp.db.objects.BookOperationCardRow;
 import comiam.nsu.libapp.db.objects.BookStorageRow;
-import comiam.nsu.libapp.db.objects.PersonCard;
+import comiam.nsu.libapp.db.objects.PersonCardRow;
 import comiam.nsu.libapp.gui.custom.AutoCompleteTextField;
 import comiam.nsu.libapp.util.GUIUtils;
 import javafx.collections.FXCollections;
@@ -23,7 +23,7 @@ import java.util.Arrays;
 import static comiam.nsu.libapp.util.GUIUtils.*;
 import static comiam.nsu.libapp.util.StringChecker.checkStrArgs;
 
-public class MainController
+public class LibraryWindowController
 {
     @FXML
     private VBox givingBookBox;
@@ -38,7 +38,11 @@ public class MainController
     @FXML
     private VBox removeBookBatchBox;
     @FXML
+    private VBox orderBookBox;
+    @FXML
     private TabPane mainPane;
+    @FXML
+    private TabPane bookStoragePane;
     @FXML
     private ChoiceBox<String> tables;
     @FXML
@@ -71,11 +75,13 @@ public class MainController
     private Button addNewBookBatch;
     @FXML
     private Button removeBookBatch;
+    @FXML
+    private Button orderBook;
 
     @FXML
-    private TableView<PersonCard> cardTable;
+    private TableView<PersonCardRow> cardTable;
     @FXML
-    private TableView<BookOperationCard> bookAccountingTable;
+    private TableView<BookOperationCardRow> bookAccountingTable;
     @FXML
     private TableView<BookStorageRow> bookStorageTable;
     @FXML
@@ -89,33 +95,33 @@ public class MainController
     @FXML
     private TableColumn<BookStorageRow, String> bookCountStoColumn;
     @FXML
-    private TableColumn<BookOperationCard, String> bookIDAccColumn;
+    private TableColumn<BookOperationCardRow, String> bookIDAccColumn;
     @FXML
-    private TableColumn<BookOperationCard, String> bookNameAccColumn;
+    private TableColumn<BookOperationCardRow, String> bookNameAccColumn;
     @FXML
-    private TableColumn<BookOperationCard, String> bookYearAccColumn;
+    private TableColumn<BookOperationCardRow, String> bookYearAccColumn;
     @FXML
-    private TableColumn<BookOperationCard, String> bookAccTimeOperationColumn;
+    private TableColumn<BookOperationCardRow, String> bookAccTimeOperationColumn;
     @FXML
-    private TableColumn<BookOperationCard, String> bookAccOperation;
+    private TableColumn<BookOperationCardRow, String> bookAccOperation;
     @FXML
-    private TableColumn<BookOperationCard, String> bookAccCountColumn;
+    private TableColumn<BookOperationCardRow, String> bookAccCountColumn;
     @FXML
-    private TableColumn<PersonCard, String> IDColumn;
+    private TableColumn<PersonCardRow, String> IDColumn;
     @FXML
-    private TableColumn<PersonCard, String> firstNameColumn;
+    private TableColumn<PersonCardRow, String> firstNameColumn;
     @FXML
-    private TableColumn<PersonCard, String> lastNameColumn;
+    private TableColumn<PersonCardRow, String> lastNameColumn;
     @FXML
-    private TableColumn<PersonCard, String> patronymicColumn;
+    private TableColumn<PersonCardRow, String> patronymicColumn;
     @FXML
-    private TableColumn<PersonCard, String> regDateColumn;
+    private TableColumn<PersonCardRow, String> regDateColumn;
     @FXML
-    private TableColumn<PersonCard, String> rewriteDateColumn;
+    private TableColumn<PersonCardRow, String> rewriteDateColumn;
     @FXML
-    private TableColumn<PersonCard, String> typeColumn;
+    private TableColumn<PersonCardRow, String> typeColumn;
     @FXML
-    private TableColumn<PersonCard, String> canTakeAwayColumn;
+    private TableColumn<PersonCardRow, String> canTakeAwayColumn;
 
     @FXML
     private Label markTF1;
@@ -137,6 +143,10 @@ public class MainController
     private Label markTF9;
     @FXML
     private Label markTF10;
+    @FXML
+    private Label markTF11;
+    @FXML
+    private Label markTF12;
 
     @FXML
     private DatePicker dateMustReturningOnGiving;
@@ -144,6 +154,8 @@ public class MainController
     private DatePicker violationDate;
     @FXML
     private DatePicker blockDate;
+    @FXML
+    private DatePicker orderReturnDate;
     @FXML
     private TextField monFine;
     @FXML
@@ -156,16 +168,26 @@ public class MainController
     private CheckBox bookReturned;
     @FXML
     private Tab orderMA;
+    @FXML
+    private Tab addNewBatch;
+    @FXML
+    private Tab removeBatch;
+    @FXML
+    private Tab bookHistory;
 
     private AutoCompleteTextField userFIOOnGiving;
-    private AutoCompleteTextField bookNameOnGiving;
     private AutoCompleteTextField userFIOOnReturning;
-    private AutoCompleteTextField bookNameOnReturning;
     private AutoCompleteTextField userFIOOnViolation;
-    private AutoCompleteTextField bookNameOnViolation;
+    private AutoCompleteTextField userFIOOnOrder;
+
     private AutoCompleteTextField violationData;
+
+    private AutoCompleteTextField bookNameOnGiving;
+    private AutoCompleteTextField bookNameOnReturning;
+    private AutoCompleteTextField bookNameOnViolation;
     private AutoCompleteTextField bookNameOnAddToStore;
     private AutoCompleteTextField bookNameOnRemovingFromStore;
+    private AutoCompleteTextField bookNameOnOrder;
 
     @Setter
     private Stage root;
@@ -185,9 +207,25 @@ public class MainController
         setupActions();
         fillChoiceList();
         editDatePickers();
+    }
+
+    public void postInit()
+    {
         if(!isMA)
             hideMAOrders();
+        else
+            hideStorageTabsInMA();
+
         refreshUsersCardTable();
+        refreshBookStorageAccountingTable();
+        refreshBookStorageTable();
+    }
+
+    private void hideStorageTabsInMA()
+    {
+        bookStoragePane.getTabs().remove(bookHistory);
+        bookStoragePane.getTabs().remove(addNewBatch);
+        bookStoragePane.getTabs().remove(removeBatch);
     }
 
     private void hideMAOrders()
@@ -210,6 +248,7 @@ public class MainController
             }
         });
         blockDate.setDayCellFactory(dateMustReturningOnGiving.getDayCellFactory());
+        orderReturnDate.setDayCellFactory(dateMustReturningOnGiving.getDayCellFactory());
     }
 
     private void insertAutocompleteTextFiled()
@@ -235,6 +274,10 @@ public class MainController
         val pane6 = removeBookBatchBox.getChildren();
         pane6.add(pane6.indexOf(markTF9) + 1, (bookNameOnRemovingFromStore = new AutoCompleteTextField()));
 
+        val pane7 = orderBookBox.getChildren();
+        pane7.add(pane7.indexOf(markTF11) + 1, (userFIOOnOrder = new AutoCompleteTextField()));
+        pane7.add(pane7.indexOf(markTF12) + 1, (bookNameOnOrder = new AutoCompleteTextField()));
+
         var res = DBActions.getUsersListForBook();
         if(res.getFirst().isEmpty())
         {
@@ -242,6 +285,7 @@ public class MainController
             userFIOOnGiving.getEntries().addAll(arr);
             userFIOOnReturning.getEntries().addAll(arr);
             userFIOOnViolation.getEntries().addAll(arr);
+            userFIOOnOrder.getEntries().addAll(arr);
         }
 
         res = DBActions.getBooksList();
@@ -253,6 +297,7 @@ public class MainController
             bookNameOnViolation.getEntries().addAll(arr);
             bookNameOnAddToStore.getEntries().addAll(arr);
             bookNameOnRemovingFromStore.getEntries().addAll(arr);
+            bookNameOnOrder.getEntries().addAll(arr);
         }
         res = DBActions.getViolationData();
         if(res.getFirst().isEmpty())
@@ -277,6 +322,37 @@ public class MainController
             bookRemoveCount.setEditable(!deleteAllBooks.isSelected());
             bookRemoveCount.setDisable(deleteAllBooks.isSelected());
             markTF10.setDisable(deleteAllBooks.isSelected());
+        });
+
+        orderBook.setOnAction(e -> {
+            val user = userFIOOnOrder.getText().trim();
+            val book = bookNameOnOrder.getText().trim();
+            val date = orderReturnDate.getValue();
+
+            if(!checkStrArgs(user, book) || date == null)
+            {
+                showError(root, "Empty fields!");
+                return;
+            }
+
+            val dateStr = date.toString();
+
+            int cardID;
+            int bookID;
+            try
+            {
+                cardID = Integer.parseInt(user.trim().split(":")[1].trim());
+                bookID = Integer.parseInt(book.trim().split(":")[0].trim());
+            }catch (Throwable ex) {
+                showError(root, "Invalid values in user or book or fine fields!");
+                return;
+            }
+
+            val res = DBCore.callProcedure("ORDER_BOOK(" + bookID + ", " + cardID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'))");
+            if(res.isEmpty())
+                Dialogs.showDefaultAlert(root, "Success!", "The book ordered!", Alert.AlertType.INFORMATION);
+            else
+                showError(root, res);
         });
 
         removeBookBatch.setOnAction(e -> {
@@ -559,9 +635,11 @@ public class MainController
         userFIOOnReturning.setOnKeyReleased(userFIOOnGiving.getOnKeyReleased());
         bookNameOnReturning.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
         userFIOOnViolation.setOnKeyReleased(userFIOOnGiving.getOnKeyReleased());
+        userFIOOnOrder.setOnKeyReleased(userFIOOnGiving.getOnKeyReleased());
         bookNameOnViolation.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
         bookNameOnAddToStore.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
         bookNameOnRemovingFromStore.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
+        bookNameOnOrder.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
 
         refreshTableData.setOnAction(e -> {
             val names = getTableNames(root);

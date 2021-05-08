@@ -1,9 +1,7 @@
 package comiam.nsu.libapp.util;
 
 import comiam.nsu.libapp.db.core.DBActions;
-import comiam.nsu.libapp.db.objects.BookOperationCard;
-import comiam.nsu.libapp.db.objects.BookStorageRow;
-import comiam.nsu.libapp.db.objects.PersonCard;
+import comiam.nsu.libapp.db.objects.*;
 import comiam.nsu.libapp.gui.Dialogs;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -81,7 +79,39 @@ public class GUIUtils
         return FXCollections.observableArrayList(data.getSecond());
     }
 
-    public static ObservableList<BookOperationCard> getBookStorageAccountingRows(Stage root, int hallID)
+    public static ObservableList<ViolationRow> getUserViolations(Stage root, int userID)
+    {
+        val res = DBActions.getUserViolations(userID);
+
+        if(showError(root, res.getFirst()))
+            return null;
+
+        val table = res.getSecond();
+        val rows = new ArrayList<ViolationRow>();
+
+        for (val row : table)
+            rows.add(new ViolationRow(row[0], row[1], row[2], row[3], row[4], row[5]));
+
+        return FXCollections.observableArrayList(rows);
+    }
+
+    public static ObservableList<OrderRow> getUserOrderRows(Stage root, int userID)
+    {
+        val res = DBActions.getUserOrders(userID);
+
+        if(showError(root, res.getFirst()))
+            return null;
+
+        val table = res.getSecond();
+        val rows = new ArrayList<OrderRow>();
+
+        for (val row : table)
+            rows.add(new OrderRow(row[0], row[1], row[2], row[3], row[4], row[5]));
+
+        return FXCollections.observableArrayList(rows);
+    }
+
+    public static ObservableList<BookOperationCardRow> getBookStorageAccountingRows(Stage root, int hallID)
     {
         val res = DBActions.getTableBookStorageAccounting(hallID);
 
@@ -89,10 +119,10 @@ public class GUIUtils
             return null;
 
         val table = res.getSecond();
-        val rows = new ArrayList<BookOperationCard>();
+        val rows = new ArrayList<BookOperationCardRow>();
 
         for (val row : table)
-            rows.add(new BookOperationCard(row[0], row[1], row[2], row[3], row[4], row[5]));
+            rows.add(new BookOperationCardRow(row[0], row[1], row[2], row[3], row[4], row[5]));
 
         return FXCollections.observableArrayList(rows);
     }
@@ -113,7 +143,7 @@ public class GUIUtils
         return FXCollections.observableArrayList(rows);
     }
 
-    public static ObservableList<PersonCard> getCardRows(Stage root)
+    public static ObservableList<PersonCardRow> getCardRows(Stage root)
     {
         val res = DBActions.getTableOfCardData();
 
@@ -121,10 +151,10 @@ public class GUIUtils
             return null;
 
         val table = res.getSecond();
-        val cards = new ArrayList<PersonCard>();
+        val cards = new ArrayList<PersonCardRow>();
 
         for (val row : table)
-            cards.add(new PersonCard(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]));
+            cards.add(new PersonCardRow(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]));
 
         return FXCollections.observableArrayList(cards);
     }

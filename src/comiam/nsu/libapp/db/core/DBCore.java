@@ -28,7 +28,7 @@ public class DBCore
      *
      * use 84.237.50.81:1521
      */
-    public static String initSession(String username, String password)
+    public static String initSession()
     {
         if(currentSession != null)
             return "";
@@ -36,8 +36,8 @@ public class DBCore
         String url = "jdbc:oracle:thin:@" + ServerData.SERVER_IP + ":" + ServerData.SERVER_PORT + ":XE";
 
         try
-        {
-            Connection conn = DriverManager.getConnection(url, username, password);
+        {   //can access this shit
+            Connection conn = DriverManager.getConnection(url, "18209_bolshim", "sefsefgth");
             conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             currentSession = conn;
             currentSession.setAutoCommit(false);

@@ -1,6 +1,8 @@
 package comiam.nsu.libapp.gui;
 
+import comiam.nsu.libapp.db.core.DBActions;
 import comiam.nsu.libapp.db.core.DBCore;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
@@ -9,6 +11,11 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import lombok.Setter;
 import lombok.val;
+import lombok.var;
+
+import static comiam.nsu.libapp.util.GUIUtils.showError;
+import static comiam.nsu.libapp.util.StringChecker.checkStrArgs;
+import static comiam.nsu.libapp.util.StringChecker.isInteger;
 
 public class EnterController
 {
@@ -24,9 +31,6 @@ public class EnterController
     @FXML
     private void initialize()
     {
-        login.setText("18209_bolshim");
-        password.setText("sefsefgth");//can access this shit
-
         login.setOnKeyReleased(e -> {
             if(e.getCode() == KeyCode.ENTER)
                 login();
@@ -41,21 +45,43 @@ public class EnterController
     @FXML
     private void login()
     {
-        val log = login.getText();
-        val passw = password.getText();
+        val log = login.getText().trim();
+        val passw = password.getText().trim();
 
-        if(log.trim().isEmpty() || passw.trim().isEmpty())
-            Dialogs.showDefaultAlert(root, "Error", "Enter login data!", Alert.AlertType.ERROR);
+        if(!checkStrArgs(log, passw))
+            Dialogs.showDefaultAlert(root, "Error", "Enter user data!", Alert.AlertType.ERROR);
         else
         {
-            val result = DBCore.initSession(log.trim(), passw.trim());
+            val result = DBCore.initSession();
 
             if(result.isEmpty())
             {
-                root.close();
+                var res = DBActions.checkUserPassword(isInteger(log), log, passw);
+                if(!res.isEmpty())
+                    showError(root, res);
+                else
+                {
+                    root.close();
 
-                Dialogs.showDefaultAlert(null, "Success!", "Welcome, " + log.trim() + "!", Alert.AlertType.INFORMATION);
-                WindowLoader.loadHallSelectorWindow(log.trim());
+                    var name = log;
+                    if(isInteger(log))
+                    {
+                        var res2 = DBActions.getUserData(Integer.parseInt(log));
+                        if(!res2.getFirst().isEmpty())
+                        {
+                            showError(root, res2.getFirst());
+                            root.close();
+                            DBCore.closeCurrentSession();
+                            Platform.exit();
+                            return;
+                        }
+                        else
+                            name = res2.getSecond()[1] + " " + res2.getSecond()[0] + " " + res2.getSecond()[2];
+
+                    }
+                    Dialogs.showDefaultAlert(null, "Success!", "Welcome, " + name + "!", Alert.AlertType.INFORMATION);
+                    WindowLoader.loadHallSelectorWindow(name, isInteger(log) ? Integer.parseInt(log) : 0, isInteger(log));
+                }
             }else
                 Dialogs.showDefaultAlert(root, "Error!", result, Alert.AlertType.ERROR);
         }

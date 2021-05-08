@@ -31,7 +31,7 @@ public class EnterReaderOneController
     @Setter
     private Stage root;
     @Setter
-    MainController controller;
+    LibraryWindowController controller;
     @Setter
     String humanID;
     @Setter

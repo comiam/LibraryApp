@@ -375,3 +375,21 @@ CREATE TABLE  "VIOLATIONS"
 /
 
 --------------------------------------------------------------------------------------
+
+CREATE TABLE  "ADMIN_PASSWORDS"
+   (	"ID" VARCHAR2(20) NOT NULL ENABLE,
+	"PASSW" VARCHAR2(32) NOT NULL ENABLE,
+	 CONSTRAINT "ADMIN_PASSWORDS_CK1" CHECK (LENGTH(PASSW) > 0) ENABLE
+   )
+/
+
+--------------------------------------------------------------------------------------
+
+CREATE TABLE  "PASSWORDS"
+   (	"ID" NUMBER NOT NULL ENABLE,
+	"PASSW" VARCHAR2(32) NOT NULL ENABLE,
+	 CONSTRAINT "PASSWORDS_CK1" CHECK (LENGTH(PASSW) > 0) ENABLE,
+	 CONSTRAINT "PASSWORDS_FK" FOREIGN KEY ("ID")
+	  REFERENCES  "READER_CARD" ("ID") ON DELETE CASCADE ENABLE
+   )
+/

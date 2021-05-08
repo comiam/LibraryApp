@@ -1,6 +1,6 @@
 package comiam.nsu.libapp.db.core;
 
-import comiam.nsu.libapp.db.objects.PersonCard;
+import comiam.nsu.libapp.db.objects.PersonCardRow;
 import comiam.nsu.libapp.util.Pair;
 import lombok.val;
 import lombok.var;
@@ -11,6 +11,164 @@ import static comiam.nsu.libapp.db.core.DBCore.*;
 
 public class DBActions
 {
+    public static String checkUserPassword(boolean isReaderUser, String login, String password)
+    {
+        var res = makeRequest("select * from " + (isReaderUser ? "PASSWORDS" : "ADMIN_PASSWORDS") +
+                " where ID = '" + login + "' and PASSW = '" + password + "'", true, false);
+        if(isBadResponse(res))
+            return "Can't check user: " + res.getErrorMsg();
+
+        try
+        {
+            val rs = res.getSet();
+
+            int rows = rs.last() ? rs.getRow() : 0;
+            rs.beforeFirst();
+
+            return rows > 0 ? "" : "We haven't this account!";
+        }catch (SQLException e) {
+            return e.getMessage();
+        } finally
+        {
+            res.closeAll();
+        }
+    }
+
+    public static String saveUserData(int userID, String firstname, String surname, String patronymic, String password)
+    {
+        var res = makeRequest("select HUMAN_ID from READER_CARD where ID = " + userID, true, false);
+        if(isBadResponse(res))
+            return "Can't update user: " + res.getErrorMsg();
+
+        int humanID = 0;
+        try
+        {
+            while(res.getSet().next())
+                humanID = Integer.parseInt(res.getSet().getString(1));
+        }catch (SQLException e) {
+            rollbackTransaction();
+            return "Can't update user: " + e.getMessage();
+        } finally
+        {
+            res.closeAll();
+        }
+
+        res = makeRequest("update HUMAN set FIRST_NAME = '" + firstname + "', SURNAME = '"
+                + surname + "', PATRONYMIC = '" + patronymic + "' where ID = " + humanID, true, true);
+        if(isBadResponse(res))
+            return "Can't update user: " + res.getErrorMsg();
+
+        res = makeRequest("update PASSWORDS set PASSW = '" + password + "' where ID = " + userID, true, true);
+        if(isBadResponse(res))
+            return "Can't update user: " + res.getErrorMsg();
+
+        return "";
+    }
+
+    public static Pair<String, String[]> getUserData(int userID)
+    {
+        var res = makeRequest("select FIRST_NAME, SURNAME, PATRONYMIC, PASSW from READER_CARD " +
+                        "inner join HUMAN H on H.ID = READER_CARD.HUMAN_ID " +
+                        "inner join PASSWORDS P on READER_CARD.ID = P.ID where READER_CARD.ID = " + userID,
+                true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Can't get violations: " + res.getErrorMsg(), null);
+
+        String[] data;
+        try
+        {
+            val rs = res.getSet();
+
+            int columns = rs.getMetaData().getColumnCount();
+            data = new String[columns];
+
+            int colI = 0;
+            val row = new String[columns];
+            if(rs.next())
+                for(int i = 1; i <= columns; i++)
+                    data[colI++] = rs.getString(i);
+        }catch (SQLException e) {
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
+        }
+
+        return new Pair<>("", data);
+    }
+
+    public static Pair<String, String[][]> getUserViolations(int userID)
+    {
+        var res = makeRequest("select BOOK_ID, NAME, HALL_ID, VIOLATION_DATE, VIOLATION_TYPE, MONETARY_FINE from VIOLATIONS " +
+                        "inner join BOOKS B on B.ID = VIOLATIONS.BOOK_ID where CARD_ID = " + userID,
+                true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Can't get orders: " + res.getErrorMsg(), null);
+
+        String[][] data;
+        try
+        {
+            val rs = res.getSet();
+
+            int rows = rs.last() ? rs.getRow() : 0;
+            rs.beforeFirst();
+            int columns = rs.getMetaData().getColumnCount();
+
+            data = new String[rows][columns];
+
+            int rowI = 0;
+            while(rs.next())
+            {
+                for(int i = 1; i <= columns; i++)
+                    data[rowI][i - 1] = rs.getString(i);
+                rowI++;
+            }
+        }catch (SQLException e) {
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
+        }
+
+        return new Pair<>("", data);
+    }
+
+    public static Pair<String, String[][]> getUserOrders(int userID)
+    {
+        var res = makeRequest("select ID, NAME, ORDER_DATE, RETURN_DATE, TAKEN, " +
+                "RETURN_STATE from MA_ORDER inner join BOOKS B on B.ID = MA_ORDER.BOOK_ID where CARD_ID = " + userID,
+                true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Can't get orders: " + res.getErrorMsg(), null);
+
+        String[][] data;
+        try
+        {
+            val rs = res.getSet();
+
+            int rows = rs.last() ? rs.getRow() : 0;
+            rs.beforeFirst();
+            int columns = rs.getMetaData().getColumnCount();
+
+            data = new String[rows][columns];
+
+            int rowI = 0;
+            while(rs.next())
+            {
+                for(int i = 1; i <= columns; i++)
+                    data[rowI][i - 1] = rs.getString(i);
+                rowI++;
+            }
+        }catch (SQLException e) {
+            return new Pair<>(e.getMessage(), null);
+        } finally
+        {
+            res.closeAll();
+        }
+
+        return new Pair<>("", data);
+    }
+
     public static Pair<String, String[]> getViolationData()
     {
         var res = makeRequest("select V.BOOK_ID, V.CARD_ID, V.HALL_ID, V.VIOLATION_DATE, V.VIOLATION_TYPE, H.SURNAME, H.FIRST_NAME, H.PATRONYMIC, B.NAME from VIOLATIONS V\n" +
@@ -373,7 +531,7 @@ public class DBActions
         return new Pair<>("", humanID);
     }
 
-    public static String deleteSelectedUser(PersonCard card)
+    public static String deleteSelectedUser(PersonCardRow card)
     {
         var res = makeRequest("delete from READER_CARD where ID = " + card.getID() + " and HUMAN_ID = " + card.getHumanID(), false, true);
         if(isBadResponse(res))
@@ -630,7 +788,7 @@ public class DBActions
             {
                 n = rs.getString(1);
 
-                if(!n.equals("HTMLDB_PLAN_TABLE") && !n.isEmpty())//ignore internal tables
+                if(!n.equals("PASSWORDS") && !n.equals("HTMLDB_PLAN_TABLE") && !n.isEmpty())//ignore internal tables
                     names[i++] = n;
             }
         } catch (SQLException e) {

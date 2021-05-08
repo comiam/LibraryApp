@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public class PersonCard
+public class PersonCardRow
 {
     @Getter
     private final String ID;

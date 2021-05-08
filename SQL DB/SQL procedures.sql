@@ -45,11 +45,11 @@ BEGIN
 	if hallt = 'intercol' then
 		select count(*) into cnt from MA_ORDER mao where mao.BOOK_ID = BOOK_ID_V and mao.CARD_ID = CARD_ID_V and mao.ORDER_DATE <= CURRENT_DATE and CURRENT_DATE <= mao.RETURN_DATE and mao.TAKEN is NULL;
 
-		if cnt > 0 then
+		if cnt = 0 then
 			RAISE_APPLICATION_ERROR(-20010, 'This book was not ordered!');
 		end if;
 
-		update MA_ORDER mao SET taken = CURRENT_DATE where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V;
+		update MA_ORDER mao SET taken = CURRENT_DATE where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V and mao.ORDER_DATE <= CURRENT_DATE and CURRENT_DATE <= mao.RETURN_DATE and mao.TAKEN is NULL and ROWNUM = 1;
 	elsif hallt = 'abonement' then
 		select CAN_TAKE_FOR_TIME into rules from READER_CARD rc, HUMAN h, READER_TYPE rt
                                 where CARD_ID_V = rc.ID and h.ID = rc.HUMAN_ID and h.TYPE_ID = rt.ID;
@@ -61,6 +61,7 @@ BEGIN
 
 	insert into ACCEPTING_RETURNING_BOOKS values (BOOK_ID_V, HALL_ID_V, CARD_ID_V, CURRENT_DATE, RETURN_DATE_V, NULL, 0);
 	update HALL_STORAGE hs SET COUNT = COUNT - 1 where hs.HALL_ID = HALL_ID_V and hs.BOOK_ID = BOOK_ID_V;
+	delete HALL_STORAGE where COUNT = 0;
 
 	rereg_reader(CARD_ID_V);
 
@@ -103,9 +104,11 @@ BEGIN
 		end if;
 	end if;
 
-	update HALL_STORAGE hs SET COUNT = COUNT + 1 where hs.HALL_ID = HALL_ID_V and hs.BOOK_ID = BOOK_ID_V;
-	update MA_ORDER mao SET RETURN_DATE = CURRENT_DATE where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V;
-	update ACCEPTING_RETURNING_BOOKS arb set RETURN_DATE = CURRENT_DATE where arb.BOOK_ID = BOOK_ID_V and arb.HALL_ID = HALL_ID_V and arb.CARD_ID = CARD_ID_V and DATE_ACCEPTING <= CURRENT_DATE and DATE_MUST_RETURNING >= CURRENT_DATE and RETURN_DATE is NULL and LOST_BOOK = 0;
+    if HALL_ID_V != 3 then
+	    update HALL_STORAGE hs SET COUNT = COUNT + 1 where hs.HALL_ID = HALL_ID_V and hs.BOOK_ID = BOOK_ID_V;
+	end if;
+	update MA_ORDER mao SET RETURN_DATE = CURRENT_DATE, RETURN_STATE = 1 where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V and mao.ORDER_DATE <= CURRENT_DATE and mao.TAKEN is not NULL and RETURN_STATE = 0 and ROWNUM = 1;
+	update ACCEPTING_RETURNING_BOOKS arb set RETURN_DATE = CURRENT_DATE where arb.BOOK_ID = BOOK_ID_V and arb.HALL_ID = HALL_ID_V and arb.CARD_ID = CARD_ID_V and DATE_ACCEPTING <= CURRENT_DATE and DATE_MUST_RETURNING >= CURRENT_DATE and RETURN_DATE is NULL and LOST_BOOK = 0 and ROWNUM = 1;
 
 	rereg_reader(CARD_ID_V);
 
@@ -136,8 +139,8 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20010, 'User cant lost or corrupt anything!');
     end if;
 
-	update ACCEPTING_RETURNING_BOOKS arb set LOST_BOOK = 1 where arb.BOOK_ID = BOOK_ID_V and arb.HALL_ID = HALL_ID_V and arb.CARD_ID = CARD_ID_V and arb.DATE_ACCEPTING <= LOST_DATE and arb.DATE_MUST_RETURNING >= LOST_DATE;
-	insert into VIOLATIONS values (BOOK_ID_V, CARD_ID_V, HALL_ID_V, LOST_DATE, TYPE_V, MONETARY_FINE_V, CARD_LOCK_UNTIL_V, 0);
+	update ACCEPTING_RETURNING_BOOKS arb set LOST_BOOK = 1 where arb.BOOK_ID = BOOK_ID_V and arb.HALL_ID = HALL_ID_V and arb.CARD_ID = CARD_ID_V and arb.DATE_ACCEPTING <= LOST_DATE and arb.DATE_MUST_RETURNING >= LOST_DATE and ROWNUM = 1;
+    insert into VIOLATIONS values (BOOK_ID_V, CARD_ID_V, HALL_ID_V, LOST_DATE, TYPE_V, MONETARY_FINE_V, CARD_LOCK_UNTIL_V, 0);
 
     rereg_reader(CARD_ID_V);
 	commit;
@@ -156,8 +159,9 @@ BEGIN
 	end if;	
 	
 	update VIOLATIONS v set IS_CLOSED = 1 where v.BOOK_ID = BOOK_ID_V and v.HALL_ID = HALL_ID_V and v.CARD_ID = CARD_ID_V and v.VIOLATION_DATE = VIOLATION_DATE_V;
+	update MA_ORDER mao set RETURN_DATE = CURRENT_DATE, RETURN_STATE = 1 where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V and mao.TAKEN is not NULL and RETURN_STATE = 0 and ROWNUM = 1;
 	
-	if BOOK_RETURNED = 1 then
+	if BOOK_RETURNED = 1 and HALL_ID_V != 3 then
 		update HALL_STORAGE hs SET COUNT = COUNT + 1 where hs.HALL_ID = HALL_ID_V and hs.BOOK_ID = BOOK_ID_V;
 	end if;		
 
@@ -228,5 +232,24 @@ BEGIN
 	        insert into BOOK_ACCOUNTING values (BOOK_ID_V, HALL_ID_V, CURRENT_DATE, 'del', COUNT_V);
         end if;
 	end if;
+	commit;
+END;
+
+------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE procedure order_book(BOOK_ID_V IN NUMBER, CARD_ID_V IN NUMBER, RETURN_DATE_V IN DATE)
+IS
+	cnt NUMBER;
+BEGIN
+	insert into MA_ORDER values (BOOK_ID_V, CARD_ID_V, CURRENT_DATE, RETURN_DATE_V, NULL, 0);
+
+	select COUNT(*) into cnt from HALL_STORAGE where BOOK_ID = BOOK_ID_V and HALL_ID = 3;
+
+	if cnt = 0 then
+	    insert into HALL_STORAGE values (3, BOOK_ID_V, 1);
+	else
+	    update HALL_STORAGE set COUNT = COUNT + 1 where HALL_ID = 3 and BOOK_ID = BOOK_ID_V;
+	end if;
+
 	commit;
 END;
