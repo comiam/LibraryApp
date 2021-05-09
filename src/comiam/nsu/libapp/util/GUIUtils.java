@@ -43,7 +43,7 @@ public class GUIUtils
     {
         if(message != null && !message.isEmpty())
         {
-            Dialogs.showDefaultAlert(root, "Error!", message, Alert.AlertType.ERROR);
+            Dialogs.showDefaultAlert(root, "Ошибка!", message, Alert.AlertType.ERROR);
             return true;
         }else
             return false;

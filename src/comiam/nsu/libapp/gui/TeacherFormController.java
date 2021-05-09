@@ -116,7 +116,7 @@ public class TeacherFormController
 
             if(!checkStrArgs(gr, p) && s0 == null && s1 == null)
             {
-                showError(root, "Some fields are empty!");
+                showError(root, "Одно или несколько полей пустые!");
                 return;
             }
 
@@ -124,14 +124,14 @@ public class TeacherFormController
             {
                 if(!showError(root, DBActions.createNewTeacher(humanID, gr, p, s0, s1)))
                 {
-                    Dialogs.showDefaultAlert(root, "Success!", "Teacher created successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Успех!", "Учитель успешно создан!", Alert.AlertType.INFORMATION);
                     root.close();
                 }
             }else
             {
                 if(!showError(root, DBActions.updateTeacher(humanID, gr, p, s0, s1, finalIsEmptyData)))
                 {
-                    Dialogs.showDefaultAlert(root, "Success!", "Teacher updated successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Успех!", "Учитель успешно обновлён!", Alert.AlertType.INFORMATION);
                     root.close();
                 }
             }

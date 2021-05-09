@@ -16,7 +16,7 @@ public class DBActions
         var res = makeRequest("select * from " + (isReaderUser ? "PASSWORDS" : "ADMIN_PASSWORDS") +
                 " where ID = '" + login + "' and PASSW = '" + password + "'", true, false);
         if(isBadResponse(res))
-            return "Can't check user: " + res.getErrorMsg();
+            return "Не получилось проверить данные пользователя: " + res.getErrorMsg();
 
         try
         {
@@ -25,7 +25,7 @@ public class DBActions
             int rows = rs.last() ? rs.getRow() : 0;
             rs.beforeFirst();
 
-            return rows > 0 ? "" : "We haven't this account!";
+            return rows > 0 ? "" : "В базе нет такого аккаунта!";
         }catch (SQLException e) {
             return e.getMessage();
         } finally
@@ -36,9 +36,9 @@ public class DBActions
 
     public static String saveUserData(int userID, String firstname, String surname, String patronymic, String password)
     {
-        var res = makeRequest("select HUMAN_ID from READER_CARD where ID = " + userID, true, false);
+        var res = makeRequest("select HUMAN_ID from READER_CARD where ID = " + userID, false, false);
         if(isBadResponse(res))
-            return "Can't update user: " + res.getErrorMsg();
+            return "Не получилось обновить пользователя: " + res.getErrorMsg();
 
         int humanID = 0;
         try
@@ -47,20 +47,20 @@ public class DBActions
                 humanID = Integer.parseInt(res.getSet().getString(1));
         }catch (SQLException e) {
             rollbackTransaction();
-            return "Can't update user: " + e.getMessage();
+            return "Не получилось обновить пользователя: " + e.getMessage();
         } finally
         {
             res.closeAll();
         }
 
         res = makeRequest("update HUMAN set FIRST_NAME = '" + firstname + "', SURNAME = '"
-                + surname + "', PATRONYMIC = '" + patronymic + "' where ID = " + humanID, true, true);
+                + surname + "', PATRONYMIC = '" + patronymic + "' where ID = " + humanID, false, true);
         if(isBadResponse(res))
-            return "Can't update user: " + res.getErrorMsg();
+            return "Не получилось обновить пользователя: " + res.getErrorMsg();
 
         res = makeRequest("update PASSWORDS set PASSW = '" + password + "' where ID = " + userID, true, true);
         if(isBadResponse(res))
-            return "Can't update user: " + res.getErrorMsg();
+            return "Не получилось обновить пользователя: " + res.getErrorMsg();
 
         return "";
     }
@@ -72,7 +72,7 @@ public class DBActions
                         "inner join PASSWORDS P on READER_CARD.ID = P.ID where READER_CARD.ID = " + userID,
                 true, false);
         if(isBadResponse(res))
-            return new Pair<>("Can't get violations: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при получении данных пользователя: " + res.getErrorMsg(), null);
 
         String[] data;
         try
@@ -103,7 +103,7 @@ public class DBActions
                         "inner join BOOKS B on B.ID = VIOLATIONS.BOOK_ID where CARD_ID = " + userID,
                 true, false);
         if(isBadResponse(res))
-            return new Pair<>("Can't get orders: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при получении текущих задолжностей: " + res.getErrorMsg(), null);
 
         String[][] data;
         try
@@ -139,7 +139,7 @@ public class DBActions
                 "RETURN_STATE from MA_ORDER inner join BOOKS B on B.ID = MA_ORDER.BOOK_ID where CARD_ID = " + userID,
                 true, false);
         if(isBadResponse(res))
-            return new Pair<>("Can't get orders: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при получении заказов: " + res.getErrorMsg(), null);
 
         String[][] data;
         try
@@ -177,7 +177,7 @@ public class DBActions
                 " inner join BOOKS B on B.ID = V.BOOK_ID\n" +
                 " where V.IS_CLOSED = 0", true, false);
         if(isBadResponse(res))
-            return new Pair<>("Can't get violations: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при получении задолжностей: " + res.getErrorMsg(), null);
 
         String[] data;
         try
@@ -214,7 +214,7 @@ public class DBActions
     {
         var res = makeRequest("select COST from BOOKS where ID = " + bookID, true, false);
         if(isBadResponse(res))
-            return new Pair<>("Can't get cost: " + res.getErrorMsg(), "");
+            return new Pair<>("Ошибка при получении стоимости книги: " + res.getErrorMsg(), "");
 
         var cost = "";
         try
@@ -223,7 +223,7 @@ public class DBActions
                 cost = res.getSet().getString(1);
         }catch (SQLException e) {
             rollbackTransaction();
-            return new Pair<>("Can't get cost: " + e.getMessage(), "");
+            return new Pair<>("Ошибка при получении стоимости книги: " + e.getMessage(), "");
         } finally
         {
             res.closeAll();
@@ -235,7 +235,7 @@ public class DBActions
     {
         var res = makeRequest("select LH.ID, HT.ID_NAME from LIBRARY_HALLS LH inner join HALL_TYPE HT on HT.ID_NAME = LH.HALL_TYPE_ID", true, false);
         if(isBadResponse(res))
-            return new Pair<>("Can't get halls list: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при получении названий залов: " + res.getErrorMsg(), null);
 
         String[] data;
         try
@@ -269,7 +269,7 @@ public class DBActions
     {
         var res = makeRequest("select ID, NAME, YEAR_OF_PUBL from BOOKS", true, false);
         if(isBadResponse(res))
-            return new Pair<>("Can't get book list: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при получении названий книг: " + res.getErrorMsg(), null);
 
         String[] data;
         try
@@ -303,7 +303,7 @@ public class DBActions
     {
         var res = makeRequest("select H.SURNAME, H.FIRST_NAME, H.PATRONYMIC, READER_CARD.ID from READER_CARD inner join HUMAN H on H.ID = READER_CARD.HUMAN_ID", true, false);
         if(isBadResponse(res))
-            return new Pair<>("Can't get user list: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при получении пользователей: " + res.getErrorMsg(), null);
 
         String[] data;
         try
@@ -337,7 +337,7 @@ public class DBActions
     {
         var res = makeRequest("select * from " + table + " where " + compareColumn + " = " + comparableValue, true, false);
         if(isBadResponse(res))
-            return new Pair<>("Can't extract row from table: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при получении строк таблицы: " + res.getErrorMsg(), null);
 
         try
         {
@@ -365,7 +365,7 @@ public class DBActions
     {
         var res = makeRequest("insert into ASSISTANT values (" + humanID + ", '" + sub0 + "')", true, true);
         res.closeAll();
-        return isBadResponse(res) ? "Can't create new assistant: " + res.getErrorMsg() : "";
+        return isBadResponse(res) ? "Ошибка при создании ассистента: " + res.getErrorMsg() : "";
     }
 
     public static String updateAssistant(String humanID, String sub0, boolean isNewData)
@@ -376,7 +376,7 @@ public class DBActions
         {
             var res = makeRequest("update ASSISTANT set SUBJECT_ID = '" + sub0 + "' where HUMAN_ID = " + humanID, true, true);
             res.closeAll();
-            return isBadResponse(res) ? "Can't update Assistant: " + res.getErrorMsg() : "";
+            return isBadResponse(res) ? "Ошибка при обновлении ассистента: " + res.getErrorMsg() : "";
         }
     }
 
@@ -384,7 +384,7 @@ public class DBActions
     {
         var res = makeRequest("insert into SPO values (" + humanID + ", '" + sub0 + "')", true, true);
         res.closeAll();
-        return isBadResponse(res) ? "Can't create new spo: " + res.getErrorMsg() : "";
+        return isBadResponse(res) ? "Ошибка при создании СПО: " + res.getErrorMsg() : "";
     }
 
     public static String updateSPO(String humanID, String sub0, boolean isNewData)
@@ -395,7 +395,7 @@ public class DBActions
         {
             var res = makeRequest("update SPO set SUBJECT_ID = '" + sub0 + "' where HUMAN_ID = " + humanID, true, true);
             res.closeAll();
-            return isBadResponse(res) ? "Can't update SPO: " + res.getErrorMsg() : "";
+            return isBadResponse(res) ? "Ошибка при обновлении СПО: " + res.getErrorMsg() : "";
         }
     }
 
@@ -405,7 +405,7 @@ public class DBActions
                   (sub0 == null ? "NULL" : "'" + sub0 + "'") + ", "
                 + (sub1 == null ? "NULL" : "'" + sub1 + "'") + ")", true, true);
         res.closeAll();
-        return isBadResponse(res) ? "Can't create new teacher: " + res.getErrorMsg() : "";
+        return isBadResponse(res) ? "Ошибка при создании учителя: " + res.getErrorMsg() : "";
     }
 
     public static String updateTeacher(String humanID, String grade, String post, String sub0, String sub1, boolean isNewData)
@@ -417,7 +417,7 @@ public class DBActions
             var res = makeRequest("update TEACHERS set GRADE_ID = '" + grade + "', POST_ID = '" + post +
                     "', SUBJECT_ID = '" + sub0 + "', SUBJECT2_ID = '" + sub1 + "' where HUMAN_ID = " + humanID, true, true);
             res.closeAll();
-            return isBadResponse(res) ? "Can't update teacher: " + res.getErrorMsg() : "";
+            return isBadResponse(res) ? "Ошибка при обновлении учителя: " + res.getErrorMsg() : "";
         }
     }
 
@@ -425,7 +425,7 @@ public class DBActions
     {
         var res = makeRequest("insert into STUDENTS values (" + humanID + ", " + group + ", '" + fac + "', " + cource + ")", true, true);
         res.closeAll();
-        return isBadResponse(res) ? "Can't create new student: " + res.getErrorMsg() : "";
+        return isBadResponse(res) ? "Ошибка при создании студента: " + res.getErrorMsg() : "";
     }
 
     public static String updateStudent(String humanID, String fac, String group, String cource, boolean isNewData)
@@ -437,7 +437,7 @@ public class DBActions
             var res = makeRequest("update STUDENTS set GROUP_ID = " + group + ", FACULTY_ID = '" + fac +
                     "', COURCE = " + cource + " where HUMAN_ID = " + humanID, true, true);
             res.closeAll();
-            return isBadResponse(res) ? "Can't update student: " + res.getErrorMsg() : "";
+            return isBadResponse(res) ? "Ошибка при обновлении студента: " + res.getErrorMsg() : "";
         }
     }
 
@@ -446,7 +446,7 @@ public class DBActions
         var res = makeRequest("select ID from READER_TYPE where NAME = '" + typeName + "'", false, false);
 
         if(isBadResponse(res))
-            return "Can't create new user: " + res.getErrorMsg();
+            return "Ошибка при создании человека в БД: " + res.getErrorMsg();
 
         int typeID = 0;
         try
@@ -455,7 +455,7 @@ public class DBActions
                 typeID = Integer.parseInt(res.getSet().getString(1));
         }catch (SQLException e) {
             rollbackTransaction();
-            return "Can't create new user: " + e.getMessage();
+            return "Ошибка при создании человека в БД: " + e.getMessage();
         } finally
         {
             res.closeAll();
@@ -464,7 +464,7 @@ public class DBActions
         res = makeRequest("update HUMAN set TYPE_ID = " + typeID + ", SURNAME = '" + surname + "', FIRST_NAME = '" + firstName +
                 "', PATRONYMIC = '" + patronymic + "' where ID = " + ID, true, true);
         res.closeAll();
-        return isBadResponse(res) ? "Can't update user data: " + res.getErrorMsg() : "";
+        return isBadResponse(res) ? "Ошибка при обновлении человека в БД: " + res.getErrorMsg() : "";
     }
 
     public static Pair<String, String> createNewReader(String surname, String firstName, String patronymic, String typeName)
@@ -472,7 +472,7 @@ public class DBActions
         var res = makeRequest("select ID from READER_TYPE where NAME = '" + typeName + "'", false, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Can't create new user: " + res.getErrorMsg(), "");
+            return new Pair<>("Ошибка при создании читателя: " + res.getErrorMsg(), "");
 
         int typeID = 0;
         try
@@ -481,7 +481,7 @@ public class DBActions
                 typeID = Integer.parseInt(res.getSet().getString(1));
         }catch (SQLException e) {
             rollbackTransaction();
-            return new Pair<>("Can't create new user: " + e.getMessage(), "");
+            return new Pair<>("Ошибка при создании читателя: " + e.getMessage(), "");
         } finally
         {
             res.closeAll();
@@ -489,7 +489,7 @@ public class DBActions
 
         res = makeInsertWithResult("insert into HUMAN values (0, " + typeID + ", '" + surname + "', '"  + firstName + "', '" + patronymic + "')", "ID");
         if(isBadResponse(res))
-            return new Pair<>("Can't create new user: " + res.getErrorMsg(), "");
+            return new Pair<>("Ошибка при создании читателя: " + res.getErrorMsg(), "");
 
         var ID = "";
         try
@@ -498,7 +498,7 @@ public class DBActions
                 ID = res.getSet().getString(1);
         }catch (SQLException e) {
             rollbackTransaction();
-            return new Pair<>("Can't create new user: " + e.getMessage(), "");
+            return new Pair<>("Ошибка при создании читателя: " + e.getMessage(), "");
         } finally
         {
             res.closeAll();
@@ -506,7 +506,7 @@ public class DBActions
 
         res = makeInsertWithResult("insert into READER_CARD values (0, " + ID + ", CURRENT_DATE, CURRENT_DATE)", "ID");
         if(isBadResponse(res))
-            return new Pair<>("Can't create new user: " + res.getErrorMsg(), "");
+            return new Pair<>("Ошибка при создании читателя: " + res.getErrorMsg(), "");
 
         val humanID = ID;
         ID = "";
@@ -516,15 +516,19 @@ public class DBActions
                 ID = res.getSet().getString(1);
         }catch (SQLException e) {
             rollbackTransaction();
-            return new Pair<>("Can't create new user: " + e.getMessage(), "");
+            return new Pair<>("Ошибка при создании читателя: " + e.getMessage(), "");
         } finally
         {
             res.closeAll();
         }
 
+        res = makeRequest("insert into PASSWORDS values(" + humanID + ", '1111')", false, true);
+        if(isBadResponse(res))
+            return new Pair<>("Ошибка при создании читателя: " + res.getErrorMsg(), "");
+
         res = makeRequest("insert into CARD_ACCOUNTING values (" + ID + ", CURRENT_DATE, 'create')", true, true);
         if(isBadResponse(res))
-            return new Pair<>("Can't create new user: " + res.getErrorMsg(), "");
+            return new Pair<>("Ошибка при создании читателя: " + res.getErrorMsg(), "");
 
         res.closeAll();
 
@@ -535,25 +539,25 @@ public class DBActions
     {
         var res = makeRequest("delete from READER_CARD where ID = " + card.getID() + " and HUMAN_ID = " + card.getHumanID(), false, true);
         if(isBadResponse(res))
-            return "Can't delete user: " + res.getErrorMsg();
+            return "Ошибка при удалении читателя: " + res.getErrorMsg();
 
         res.closeAll();
 
         res = makeRequest("delete from HUMAN where ID = " + card.getHumanID(), false, true);
         if(isBadResponse(res))
-            return "Can't delete user: " + res.getErrorMsg();
+            return "Ошибка при удалении читателя: " + res.getErrorMsg();
 
         res.closeAll();
 
         res = makeRequest("insert into CARD_ACCOUNTING values (" + card.getID() + ", CURRENT_DATE, 'delete')", false, true);
         if(isBadResponse(res))
-            return "Can't delete user: " + res.getErrorMsg();
+            return "Ошибка при удалении читателя: " + res.getErrorMsg();
 
         res.closeAll();
 
         val finalRes = commitTransaction();
 
-        return !finalRes.isEmpty() ? "Can't delete user: " + finalRes : "";
+        return !finalRes.isEmpty() ? "Ошибка при удалении читателя: " + finalRes : "";
     }
 
     public static Pair<String, String[]> loadVariablesOfTable(String table)
@@ -561,7 +565,7 @@ public class DBActions
         var res = makeRequest("select ID_NAME from " + table, true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Can't load data to form: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при загрузке названий: " + res.getErrorMsg(), null);
 
         try
         {
@@ -589,7 +593,7 @@ public class DBActions
                 " where HALL_ID = " + hallID, true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Can't load table of book storage accounting: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при загрузке учета склада книг: " + res.getErrorMsg(), null);
 
         String[][] data;
         try
@@ -626,7 +630,7 @@ public class DBActions
                 " where HS.HALL_ID = " + hallID, true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Can't load table of book storage: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при загрузке списка склада книг: " + res.getErrorMsg(), null);
 
         String[][] data;
         try
@@ -663,7 +667,7 @@ public class DBActions
                 " inner join READER_TYPE RT on H.TYPE_ID = RT.ID", true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Can't load table of reader cards: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при загрузке списка читателей: " + res.getErrorMsg(), null);
 
         String[][] data;
         try
@@ -698,7 +702,7 @@ public class DBActions
         val res = makeRequest("select * from " + table.trim(), true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Can't get rows of selected table: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при загрузке строк выбранной таблицы: " + res.getErrorMsg(), null);
 
         String[][] data;
         try
@@ -739,7 +743,7 @@ public class DBActions
         val res = makeRequest("select NAME from READER_TYPE", true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Can't get reader types: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при загрузке типов читателей: " + res.getErrorMsg(), null);
 
         String[] names;
         try
@@ -770,7 +774,7 @@ public class DBActions
         val res = makeRequest("select table_name from user_tables", true, false);
 
         if(isBadResponse(res))
-            return new Pair<>("Can't get table names list: " + res.getErrorMsg(), null);
+            return new Pair<>("Ошибка при загрузке списков таблиц: " + res.getErrorMsg(), null);
 
         String[] names;
         try
@@ -788,7 +792,7 @@ public class DBActions
             {
                 n = rs.getString(1);
 
-                if(!n.equals("PASSWORDS") && !n.equals("HTMLDB_PLAN_TABLE") && !n.isEmpty())//ignore internal tables
+                if(!n.equals("ADMIN_PASSWORDS") && !n.equals("PASSWORDS") && !n.equals("HTMLDB_PLAN_TABLE") && !n.isEmpty())//ignore internal tables
                     names[i++] = n;
             }
         } catch (SQLException e) {

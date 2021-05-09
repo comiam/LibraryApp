@@ -49,7 +49,7 @@ public class EnterController
         val passw = password.getText().trim();
 
         if(!checkStrArgs(log, passw))
-            Dialogs.showDefaultAlert(root, "Error", "Enter user data!", Alert.AlertType.ERROR);
+            Dialogs.showDefaultAlert(root, "Ошибка", "Введите данные для входа!", Alert.AlertType.ERROR);
         else
         {
             val result = DBCore.initSession();
@@ -79,11 +79,11 @@ public class EnterController
                             name = res2.getSecond()[1] + " " + res2.getSecond()[0] + " " + res2.getSecond()[2];
 
                     }
-                    Dialogs.showDefaultAlert(null, "Success!", "Welcome, " + name + "!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(null, "Успех!", "Добро пожаловать, " + name + "!", Alert.AlertType.INFORMATION);
                     WindowLoader.loadHallSelectorWindow(name, isInteger(log) ? Integer.parseInt(log) : 0, isInteger(log));
                 }
             }else
-                Dialogs.showDefaultAlert(root, "Error!", result, Alert.AlertType.ERROR);
+                Dialogs.showDefaultAlert(root, "Ошибка!", result, Alert.AlertType.ERROR);
         }
     }
 }

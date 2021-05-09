@@ -35,13 +35,13 @@ public class HallSelectorController
 
             if(hall == null)
             {
-                showError(root, "Please select hall!");
+                showError(root, "Выберите залл!");
                 return;
             }
 
             root.close();
 
-            int hallID = hall.equals("Home") ? -1 : Integer.parseInt(hall.split(":")[0].trim());
+            int hallID = hall.equals("Дома") ? -1 : Integer.parseInt(hall.split(":")[0].trim());
             if(isReaderUser)
                 WindowLoader.loadUserWindow(userName, hallID, userID);
             else
@@ -62,6 +62,6 @@ public class HallSelectorController
         halls.setItems(data);
 
         if(isReaderUser)
-            data.add("Home");
+            data.add("Дома");
     }
 }

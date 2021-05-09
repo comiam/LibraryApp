@@ -66,7 +66,7 @@ public class AssistantFormController
 
             if(s0 == null)
             {
-                showError(root, "Some fields are empty!");
+                showError(root, "Некоторые поля пустые!");
                 return;
             }
 
@@ -74,14 +74,14 @@ public class AssistantFormController
             {
                 if(!showError(root, DBActions.createNewAssistant(humanID, s0)))
                 {
-                    Dialogs.showDefaultAlert(root, "Success!", "Assistant created successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Успех!", "Ассистент успешно создан!", Alert.AlertType.INFORMATION);
                     root.close();
                 }
             }else
             {
                 if(!showError(root, DBActions.updateAssistant(humanID, s0, finalIsEmptyData)))
                 {
-                    Dialogs.showDefaultAlert(root, "Success!", "Assistant updated successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Успех!", "Ассистент успешно обновлён!", Alert.AlertType.INFORMATION);
                     root.close();
                 }
             }

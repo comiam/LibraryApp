@@ -71,7 +71,7 @@ public class EnterReaderOneController
 
             if(!checkStrArgs(surn, firstn, patr, selected))
             {
-                showError(root, "One of fields is empty!");
+                showError(root, "Одно или несколько полей пустые!");
                 return;
             }
 
@@ -104,7 +104,7 @@ public class EnterReaderOneController
                 case "assistant":
                     WindowLoader.loadAssistantFormWindow(res.getSecond(), isEditingUser);
                 default:
-                    Dialogs.showDefaultAlert(root, "Success!", "Abiturient updated successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Успех!", "Абитуриент успешно обновлён!", Alert.AlertType.INFORMATION);
                     break;
             }
         });

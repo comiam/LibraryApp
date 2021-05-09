@@ -92,7 +92,7 @@ public class StudentFormController
 
             if(!checkStrArgs(fac0, gr, course0))
             {
-                showError(root, "Some fields are empty!");
+                showError(root, "Одно или несколько полей пустые!");
                 return;
             }
 
@@ -100,14 +100,14 @@ public class StudentFormController
             {
                 if(!showError(root, DBActions.createNewStudent(humanID, fac0, gr, course0)))
                 {
-                    Dialogs.showDefaultAlert(root, "Success!", "Student created successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Успех!", "Студент успешно создан!", Alert.AlertType.INFORMATION);
                     root.close();
                 }
             }else
             {
                 if(!showError(root, DBActions.updateStudent(humanID, fac0, gr, course0, finalIsEmptyData)))
                 {
-                    Dialogs.showDefaultAlert(root, "Success!", "Student updated successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Успех!", "Студент успешно обновлён!", Alert.AlertType.INFORMATION);
                     root.close();
                 }
             }

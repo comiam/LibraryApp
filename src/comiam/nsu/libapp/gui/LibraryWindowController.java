@@ -331,7 +331,7 @@ public class LibraryWindowController
 
             if(!checkStrArgs(user, book) || date == null)
             {
-                showError(root, "Empty fields!");
+                showError(root, "Одно или несколько полей пустые!");
                 return;
             }
 
@@ -344,13 +344,13 @@ public class LibraryWindowController
                 cardID = Integer.parseInt(user.trim().split(":")[1].trim());
                 bookID = Integer.parseInt(book.trim().split(":")[0].trim());
             }catch (Throwable ex) {
-                showError(root, "Invalid values in user or book or fine fields!");
+                showError(root, "Некорректные значения в полях!");
                 return;
             }
 
             val res = DBCore.callProcedure("ORDER_BOOK(" + bookID + ", " + cardID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'))");
             if(res.isEmpty())
-                Dialogs.showDefaultAlert(root, "Success!", "The book ordered!", Alert.AlertType.INFORMATION);
+                Dialogs.showDefaultAlert(root, "Успех!", "Книга заказана!", Alert.AlertType.INFORMATION);
             else
                 showError(root, res);
         });
@@ -362,13 +362,13 @@ public class LibraryWindowController
 
             if(count.isEmpty() && !deleteAll)
             {
-                showError(root, "Invalid book count field!");
+                showError(root, "Некорректное количество списанных книг!");
                 return;
             }
 
             if(book.trim().isEmpty() || book.trim().split(":").length != 3)
             {
-                showError(root, "Invalid book field!");
+                showError(root, "Поле книги некорреткно!");
                 return;
             }
 
@@ -379,13 +379,13 @@ public class LibraryWindowController
                 bookCount = deleteAll ? 0 : Integer.parseInt(count);
                 bookID = Integer.parseInt(book.trim().split(":")[0].trim());
             }catch (Throwable ex) {
-                showError(root, "Invalid values in count or book fields!");
+                showError(root, "Некорреткные значения в полях!");
                 return;
             }
 
             val res = DBCore.callProcedure("REMOVE_BOOK_FROM_HALL(" + bookID + ", " + hallID + ", " + bookCount + ", " + (deleteAll ? "1" : "0") + ")");
             if(res.isEmpty())
-                Dialogs.showDefaultAlert(root, "Success!", "The books removed!", Alert.AlertType.INFORMATION);
+                Dialogs.showDefaultAlert(root, "Успех!", "Книги списаны!", Alert.AlertType.INFORMATION);
             else
                 showError(root, res);
         });
@@ -396,13 +396,13 @@ public class LibraryWindowController
 
             if(count.isEmpty())
             {
-                showError(root, "Invalid book count field!");
+                showError(root, "Некорректное количество списанных книг!");
                 return;
             }
 
             if(book.trim().isEmpty() || book.trim().split(":").length != 3)
             {
-                showError(root, "Invalid book field!");
+                showError(root, "Поле книги некорреткно!");
                 return;
             }
 
@@ -413,13 +413,13 @@ public class LibraryWindowController
                 bookCount = Integer.parseInt(count);
                 bookID = Integer.parseInt(book.trim().split(":")[0].trim());
             }catch (Throwable ex) {
-                showError(root, "Invalid values in count or book fields!");
+                showError(root, "Некорреткные значения в полях!");
                 return;
             }
 
             val res = DBCore.callProcedure("ADD_BOOK_TO_HALL(" + bookID + ", " + hallID + ", " + bookCount + ")");
             if(res.isEmpty())
-                Dialogs.showDefaultAlert(root, "Success!", "The books added!", Alert.AlertType.INFORMATION);
+                Dialogs.showDefaultAlert(root, "Успех!", "Книги добавлены на склад!", Alert.AlertType.INFORMATION);
             else
                 showError(root, res);
         });
@@ -432,7 +432,7 @@ public class LibraryWindowController
 
             if(violation.split(";").length != 7)
             {
-                showError(root, "Invalid violation data!");
+                showError(root, "Некорректные данные о задолжности!");
                 return;
             }
 
@@ -447,12 +447,12 @@ public class LibraryWindowController
 
                 val res = DBCore.callProcedure("CLOSE_VIOLATION(" + bookID + ", " + hallID + ", " + cardID + ", " + date + ", " + bookRet + ")");
                 if(res.isEmpty())
-                    Dialogs.showDefaultAlert(root, "Success!", "Violation closed!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Успех!", "Задолжность закрыта!", Alert.AlertType.INFORMATION);
                 else
                     showError(root, res);
             }catch (Throwable ex) {
                 ex.printStackTrace();
-                showError(root, "Invalid violation data!");
+                showError(root, "Некорректные данные в полях!");
             }
         });
 
@@ -486,7 +486,7 @@ public class LibraryWindowController
 
             if(!checkStrArgs(user, book, type, fine) || date == null)
             {
-                showError(root, "Empty fields!");
+                showError(root, "Одно или несколько полей пустые!");
                 return;
             }
 
@@ -494,13 +494,13 @@ public class LibraryWindowController
 
             if(user.trim().split(":").length != 2)
             {
-                showError(root, "Invalid user field!");
+                showError(root, "Некорректное значение поля пользователя!");
                 return;
             }
 
             if(book.trim().split(":").length != 3)
             {
-                showError(root, "Invalid book field!");
+                showError(root, "Некорректное значение поля книги!");
                 return;
             }
 
@@ -513,14 +513,14 @@ public class LibraryWindowController
                 bookID = Integer.parseInt(book.trim().split(":")[0].trim());
                 fineInt = Integer.parseInt(fine);
             }catch (Throwable ex) {
-                showError(root, "Invalid values in user or book or fine fields!");
+                showError(root, "Некорректные значения в полях!");
                 return;
             }
 
             val res = DBCore.callProcedure("OPEN_VIOLATION(" + bookID + ", " + hallID + ", " + cardID + ", '" +
                     type + "', TO_DATE('" + dateStr + "', 'yyyy-mm-dd'), " + fineInt + ", " + (block == null ? "NULL" : "TO_DATE('" + block.toString() + "', 'yyyy-mm-dd')") + ")");
             if(res.isEmpty())
-                Dialogs.showDefaultAlert(root, "Success!", "Violation added!", Alert.AlertType.INFORMATION);
+                Dialogs.showDefaultAlert(root, "Успех!", "Задолжность добавлена!", Alert.AlertType.INFORMATION);
             else
                 showError(root, res);
         });
@@ -532,19 +532,19 @@ public class LibraryWindowController
 
             if(user.trim().isEmpty() || user.trim().split(":").length != 2)
             {
-                showError(root, "Invalid user field!");
+                showError(root, "Некорректное значение поля пользователя!");
                 return;
             }
 
             if(book.trim().isEmpty() || book.trim().split(":").length != 3)
             {
-                showError(root, "Invalid book field!");
+                showError(root, "Некорректное значение поля книги!");
                 return;
             }
 
             if(date == null)
             {
-                showError(root, "Select date to return book!");
+                showError(root, "Веберите дату возврата книги!");
                 return;
             }
 
@@ -556,12 +556,12 @@ public class LibraryWindowController
                 cardID = Integer.parseInt(user.trim().split(":")[1].trim());
                 bookID = Integer.parseInt(book.trim().split(":")[0].trim());
             }catch (Throwable ex) {
-                showError(root, "Invalid values in user or book fields!");
+                showError(root, "Некорректные значения в полях!");
                 return;
             }
             val res = DBCore.callProcedure("GET_BOOK(" + bookID + ", " + hallID + ", " + cardID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'))");
             if(res.isEmpty())
-                Dialogs.showDefaultAlert(root, "Success!", "The book can be handed in!", Alert.AlertType.INFORMATION);
+                Dialogs.showDefaultAlert(root, "Успех!", "Книга сдана!", Alert.AlertType.INFORMATION);
             else
                 showError(root, res);
         });
@@ -572,13 +572,13 @@ public class LibraryWindowController
 
             if(user.trim().isEmpty() || user.trim().split(":").length != 2)
             {
-                showError(root, "Invalid user field!");
+                showError(root, "Некорректное значение поля пользователя!");
                 return;
             }
 
             if(book.trim().isEmpty() || book.trim().split(":").length != 3)
             {
-                showError(root, "Invalid book field!");
+                showError(root, "Некорректное значение поля книги!");
                 return;
             }
 
@@ -589,12 +589,12 @@ public class LibraryWindowController
                 cardID = Integer.parseInt(user.trim().split(":")[1].trim());
                 bookID = Integer.parseInt(book.trim().split(":")[0].trim());
             }catch (Throwable ex) {
-                showError(root, "Invalid values in user or book fields!");
+                showError(root, "Некорректные значения в полях!");
                 return;
             }
             val res = DBCore.callProcedure("RETURN_BOOK(" + bookID + ", " + hallID + ", " + cardID + ")");
             if(res.isEmpty())
-                Dialogs.showDefaultAlert(root, "Success!", "The book can be returned!", Alert.AlertType.INFORMATION);
+                Dialogs.showDefaultAlert(root, "Успех!", "Книга возвращена!", Alert.AlertType.INFORMATION);
             else
                 showError(root, res);
         });
@@ -681,7 +681,7 @@ public class LibraryWindowController
 
             if (user == null)
             {
-                showError(root, "There is nothing to delete!");
+                showError(root, "Нет выделенных пользователей для удаления!");
                 return;
             }
 
@@ -698,7 +698,7 @@ public class LibraryWindowController
 
             if (user == null)
             {
-                showError(root, "There is nothing to delete!");
+                showError(root, "Нет выделенных пользователей для редактирования!");
                 return;
             }
             WindowLoader.loadEnterReaderOneWindow(this, true, user.getHumanID(), user.getType());

@@ -187,7 +187,7 @@ public class UserWindowController
 
             if(!checkStrArgs(book) || date == null)
             {
-                showError(root, "Empty fields!");
+                showError(root, "Одно или несколько полей пустые!");
                 return;
             }
 
@@ -198,13 +198,13 @@ public class UserWindowController
             {
                 bookID = Integer.parseInt(book.trim().split(":")[0].trim());
             }catch (Throwable ex) {
-                showError(root, "Invalid values in user or book or fine fields!");
+                showError(root, "Некорректные значения в полях!");
                 return;
             }
 
             val res = DBCore.callProcedure("ORDER_BOOK(" + bookID + ", " + userID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'))");
             if(res.isEmpty())
-                Dialogs.showDefaultAlert(root, "Success!", "The book ordered!", Alert.AlertType.INFORMATION);
+                Dialogs.showDefaultAlert(root, "Успех!", "Книга заказана!", Alert.AlertType.INFORMATION);
             else
                 showError(root, res);
         });
@@ -214,7 +214,7 @@ public class UserWindowController
 
             if(book.trim().isEmpty() || book.trim().split(":").length != 3)
             {
-                showError(root, "Invalid book field!");
+                showError(root, "Некорректное значение поля книги!");
                 return;
             }
 
@@ -223,12 +223,12 @@ public class UserWindowController
             {
                 bookID = Integer.parseInt(book.trim().split(":")[0].trim());
             }catch (Throwable ex) {
-                showError(root, "Invalid values in user or book fields!");
+                showError(root, "Некорретные значения в полях!");
                 return;
             }
             val res = DBCore.callProcedure("GET_BOOK(" + bookID + ", " + hallID + ", " + userID + ", CURRENT_DATE+1)");
             if(res.isEmpty())
-                Dialogs.showDefaultAlert(root, "Success!", "The book can be handed in!", Alert.AlertType.INFORMATION);
+                Dialogs.showDefaultAlert(root, "Успех!", "Книга сдана!", Alert.AlertType.INFORMATION);
             else
                 showError(root, res);
         });
@@ -238,7 +238,7 @@ public class UserWindowController
 
             if(book.trim().isEmpty() || book.trim().split(":").length != 3)
             {
-                showError(root, "Invalid book field!");
+                showError(root, "Некорректное значение поля книги!");
                 return;
             }
 
@@ -247,12 +247,12 @@ public class UserWindowController
             {
                 bookID = Integer.parseInt(book.trim().split(":")[0].trim());
             }catch (Throwable ex) {
-                showError(root, "Invalid values in user or book fields!");
+                showError(root, "Некорретные значения в полях!");
                 return;
             }
             val res = DBCore.callProcedure("RETURN_BOOK(" + bookID + ", " + hallID + ", " + userID + ")");
             if(res.isEmpty())
-                Dialogs.showDefaultAlert(root, "Success!", "The book can be returned!", Alert.AlertType.INFORMATION);
+                Dialogs.showDefaultAlert(root, "Успех!", "Книга сдана!", Alert.AlertType.INFORMATION);
             else
                 showError(root, res);
         });
@@ -279,13 +279,13 @@ public class UserWindowController
 
             if(!checkStrArgs(name, surn, patr, passw))
             {
-                showError(root, "Empty fields!");
+                showError(root, "Одно или несколько полей пустые!");
                 return;
             }
 
             if(name.length() > 20 || surn.length() > 20 || patr.length() > 20 || passw.length() > 32)
             {
-                showError(root, "Invalid length of fields!");
+                showError(root, "Некорректные длины полей!");
                 return;
             }
 
@@ -293,7 +293,7 @@ public class UserWindowController
             if(!res.isEmpty())
                 showError(root, res);
             else
-                Dialogs.showDefaultAlert(root, "Success!", "User data saved!", Alert.AlertType.INFORMATION);
+                Dialogs.showDefaultAlert(root, "Успех!", "Данные пользователя сохранены!", Alert.AlertType.INFORMATION);
         });
     }
 

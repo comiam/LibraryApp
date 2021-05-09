@@ -66,7 +66,7 @@ public class SPOFormController
 
             if(s0 == null)
             {
-                showError(root, "Some fields are empty!");
+                showError(root, "Одно или несколько полей пустые!");
                 return;
             }
 
@@ -74,14 +74,14 @@ public class SPOFormController
             {
                 if(!showError(root, DBActions.createNewSPO(humanID, s0)))
                 {
-                    Dialogs.showDefaultAlert(root, "Success!", "SPO updated successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Успех!", "СПО успешно создан!", Alert.AlertType.INFORMATION);
                     root.close();
                 }
             }else
             {
                 if(!showError(root, DBActions.updateSPO(humanID, s0, finalIsEmptyData)))
                 {
-                    Dialogs.showDefaultAlert(root, "Success!", "SPO updated successfully!", Alert.AlertType.INFORMATION);
+                    Dialogs.showDefaultAlert(root, "Успех!", "СПО успешно обновлён!", Alert.AlertType.INFORMATION);
                     root.close();
                 }
             }
