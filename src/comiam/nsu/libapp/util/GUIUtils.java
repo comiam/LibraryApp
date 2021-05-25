@@ -95,6 +95,20 @@ public class GUIUtils
         return FXCollections.observableArrayList(rows);
     }
 
+    public static ObservableList<AcceptOrderRow> getNotAcceptedOrderRows(Stage root)
+    {
+        val res = DBActions.getNotAcceptedOrders();
+        if(showError(root, res.getFirst()))
+            return null;
+        val table = res.getSecond();
+        val rows = new ArrayList<AcceptOrderRow>();
+
+        for (val row : table)
+            rows.add(new AcceptOrderRow(row[0], row[1], row[2], row[3], row[4]));
+
+        return FXCollections.observableArrayList(rows);
+    }
+
     public static ObservableList<OrderRow> getUserOrderRows(Stage root, int userID)
     {
         val res = DBActions.getUserOrders(userID);
@@ -106,7 +120,7 @@ public class GUIUtils
         val rows = new ArrayList<OrderRow>();
 
         for (val row : table)
-            rows.add(new OrderRow(row[0], row[1], row[2], row[3], row[4], row[5]));
+            rows.add(new OrderRow(row[0], row[1], row[2], row[3], row[4], row[5], row[6]));
 
         return FXCollections.observableArrayList(rows);
     }

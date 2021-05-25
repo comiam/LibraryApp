@@ -67,6 +67,8 @@ public class UserWindowController
     private TableColumn<OrderRow, String> takenDateColumn;
     @FXML
     private TableColumn<OrderRow, String> returnedOrderColumn;
+    @FXML
+    private TableColumn<OrderRow, String> acceptedOrderColumn;
 
     @FXML
     private TableView<ViolationRow> violationsTable;
@@ -147,7 +149,6 @@ public class UserWindowController
             username.setText(res.getSecond()[0]);
             surname.setText(res.getSecond()[1]);
             patronymic.setText(res.getSecond()[2]);
-            password.setText(res.getSecond()[3]);
         }
     }
 
@@ -202,7 +203,7 @@ public class UserWindowController
                 return;
             }
 
-            val res = DBCore.callProcedure("ORDER_BOOK(" + bookID + ", " + userID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'))");
+            val res = DBCore.callProcedure("\"18209_BOLSHIM\".ORDER_BOOK(" + bookID + ", " + userID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'), 0)", true);
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Успех!", "Книга заказана!", Alert.AlertType.INFORMATION);
             else
@@ -226,7 +227,7 @@ public class UserWindowController
                 showError(root, "Некорретные значения в полях!");
                 return;
             }
-            val res = DBCore.callProcedure("GET_BOOK(" + bookID + ", " + hallID + ", " + userID + ", CURRENT_DATE+1)");
+            val res = DBCore.callProcedure("\"18209_BOLSHIM\".GET_BOOK(" + bookID + ", " + hallID + ", " + userID + ", CURRENT_DATE+1)", true);
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Успех!", "Книга сдана!", Alert.AlertType.INFORMATION);
             else
@@ -250,7 +251,7 @@ public class UserWindowController
                 showError(root, "Некорретные значения в полях!");
                 return;
             }
-            val res = DBCore.callProcedure("RETURN_BOOK(" + bookID + ", " + hallID + ", " + userID + ")");
+            val res = DBCore.callProcedure("\"18209_BOLSHIM\".RETURN_BOOK(" + bookID + ", " + hallID + ", " + userID + ")", true);
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Успех!", "Книга сдана!", Alert.AlertType.INFORMATION);
             else
@@ -315,6 +316,7 @@ public class UserWindowController
         latePassDateColumn.setCellValueFactory(new PropertyValueFactory<>("latePassDate"));
         takenDateColumn.setCellValueFactory(new PropertyValueFactory<>("takenDate"));
         returnedOrderColumn.setCellValueFactory(new PropertyValueFactory<>("returnedOrder"));
+        acceptedOrderColumn.setCellValueFactory(new PropertyValueFactory<>("accepted"));
 
         IDViolationColumn.setCellValueFactory(new PropertyValueFactory<>("ID"));
         bookNameViolationColumn.setCellValueFactory(new PropertyValueFactory<>("bookName"));

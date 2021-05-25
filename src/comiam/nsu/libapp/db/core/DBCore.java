@@ -28,7 +28,7 @@ public class DBCore
      *
      * use 84.237.50.81:1521
      */
-    public static String initSession()
+    public static String initSession(String user, String password)
     {
         if(currentSession != null)
             return "";
@@ -37,7 +37,7 @@ public class DBCore
 
         try
         {   //can access this shit
-            Connection conn = DriverManager.getConnection(url, "18209_bolshim", "sefsefgth");
+            Connection conn = DriverManager.getConnection(url, "18209_b_" + user, password);
             conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             currentSession = conn;
             currentSession.setAutoCommit(false);
@@ -84,7 +84,7 @@ public class DBCore
      * Semantic call like <procedure_name>(args)
      * Function will made sql request {call <procedure_name>(args)} and execute
      */
-    public static String callProcedure(String call)
+    public static String callProcedure(String call, boolean commit)
     {
         if(currentSession == null)
             return "Session not initialized!";
@@ -94,7 +94,8 @@ public class DBCore
         {
             st = currentSession.prepareCall("{call " + call + "}", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             st.execute("{call " + call + "}");
-            commitTransaction();
+            if(commit)
+                commitTransaction();
             return "";
         }catch(Throwable e)
         {

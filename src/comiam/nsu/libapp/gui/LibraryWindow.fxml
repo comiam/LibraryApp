@@ -89,34 +89,66 @@
           </Tab>
             <Tab fx:id="orderMA" text="ЗАКАЗЫ">
                <content>
-                  <VBox fx:id="orderBookBox" prefHeight="200.0" prefWidth="100.0">
-                     <children>
-                        <Label prefHeight="26.0" prefWidth="560.0" text="Принять заказ книги:">
-                           <font>
-                              <Font size="17.0" />
-                           </font>
-                        </Label>
-                        <Separator orientation="VERTICAL" prefHeight="33.0" prefWidth="0.0" />
-                        <Label fx:id="markTF11" text="Введите читателя:">
-                           <font>
-                              <Font size="13.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="markTF12" text="Выберите книгу для заказа:">
-                           <font>
-                              <Font size="13.0" />
-                           </font>
-                        </Label>
-                        <Label text="Когда должны сдать:">
-                           <font>
-                              <Font size="13.0" />
-                           </font>
-                        </Label>
-                        <DatePicker fx:id="orderReturnDate" />
-                        <Separator orientation="VERTICAL" prefHeight="33.0" prefWidth="0.0" />
-                        <Button fx:id="orderBook" mnemonicParsing="false" prefHeight="72.0" prefWidth="603.0" text="Заказать" />
-                     </children>
-                  </VBox>
+                  <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                      <Tab text="Оформить заказ">
+                           <content>
+                              <VBox fx:id="orderBookBox" prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <Label prefHeight="26.0" prefWidth="560.0" text="Принять заказ книги:">
+                                       <font>
+                                          <Font size="17.0" />
+                                       </font>
+                                    </Label>
+                                    <Separator orientation="VERTICAL" prefHeight="33.0" prefWidth="0.0" />
+                                    <Label fx:id="markTF11" text="Введите читателя:">
+                                       <font>
+                                          <Font size="13.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="markTF12" text="Выберите книгу для заказа:">
+                                       <font>
+                                          <Font size="13.0" />
+                                       </font>
+                                    </Label>
+                                    <Label text="Когда должны сдать:">
+                                       <font>
+                                          <Font size="13.0" />
+                                       </font>
+                                    </Label>
+                                    <DatePicker fx:id="orderReturnDate" />
+                                    <Separator orientation="VERTICAL" prefHeight="33.0" prefWidth="0.0" />
+                                    <Button fx:id="orderBook" mnemonicParsing="false" prefHeight="72.0" prefWidth="603.0" text="Заказать" />
+                                 </children>
+                              </VBox>
+                           </content>
+                      </Tab>
+                      <Tab text="Подтвердить заказ от читателя">
+                           <content>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <Button fx:id="refreshAcceptOrderTable" mnemonicParsing="false" prefWidth="603.0" text="Обновить" />
+                                    <HBox prefHeight="31.0" prefWidth="603.0">
+                                       <children>
+                                          <Button fx:id="denyOrder" mnemonicParsing="false" prefWidth="603.0" text="Отклонить" />
+                                          <Button fx:id="acceptOrder" mnemonicParsing="false" prefWidth="603.0" text="Одобрить" />
+                                       </children>
+                                    </HBox>
+                                    <TableView fx:id="acceptTable" prefHeight="409.0" prefWidth="603.0">
+                                       <columns>
+                                          <TableColumn fx:id="bookIDAcceptColumn" prefWidth="77.0" text="ID книги" />
+                                          <TableColumn fx:id="bookNameAcceptColumn" prefWidth="212.0" text="Название книги" />
+                                          <TableColumn fx:id="cardIDAccColumn" prefWidth="87.0" text="ID заказчика" />
+                                          <TableColumn fx:id="orderDateAccColumn" prefWidth="103.0" text="Дата заказа" />
+                                          <TableColumn fx:id="retDateAccColumn" prefWidth="123.0" text="Дата просрочки" />
+                                       </columns>
+                                    </TableView>
+                                 </children>
+                              </VBox>
+                           </content>
+                      </Tab>
+                    </tabs>
+                  </TabPane>
                </content>
             </Tab>
           <Tab text="КАРТОЧКИ">

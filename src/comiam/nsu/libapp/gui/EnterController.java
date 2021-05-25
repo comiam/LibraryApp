@@ -52,13 +52,13 @@ public class EnterController
             Dialogs.showDefaultAlert(root, "Ошибка", "Введите данные для входа!", Alert.AlertType.ERROR);
         else
         {
-            val result = DBCore.initSession();
+            val result = DBCore.initSession(log, passw);
 
             if(result.isEmpty())
             {
-                var res = DBActions.checkUserPassword(isInteger(log), log, passw);
-                if(!res.isEmpty())
-                    showError(root, res);
+                var res = DBActions.userIsReader();
+                if(!res.getFirst().isEmpty())
+                    showError(root, res.getFirst());
                 else
                 {
                     root.close();
@@ -80,7 +80,7 @@ public class EnterController
 
                     }
                     Dialogs.showDefaultAlert(null, "Успех!", "Добро пожаловать, " + name + "!", Alert.AlertType.INFORMATION);
-                    WindowLoader.loadHallSelectorWindow(name, isInteger(log) ? Integer.parseInt(log) : 0, isInteger(log));
+                    WindowLoader.loadHallSelectorWindow(name, isInteger(log) ? Integer.parseInt(log) : 0, res.getSecond());
                 }
             }else
                 Dialogs.showDefaultAlert(root, "Ошибка!", result, Alert.AlertType.ERROR);

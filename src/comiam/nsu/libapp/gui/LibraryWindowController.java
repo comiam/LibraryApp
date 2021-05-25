@@ -2,6 +2,7 @@ package comiam.nsu.libapp.gui;
 
 import comiam.nsu.libapp.db.core.DBActions;
 import comiam.nsu.libapp.db.core.DBCore;
+import comiam.nsu.libapp.db.objects.AcceptOrderRow;
 import comiam.nsu.libapp.db.objects.BookOperationCardRow;
 import comiam.nsu.libapp.db.objects.BookStorageRow;
 import comiam.nsu.libapp.db.objects.PersonCardRow;
@@ -77,13 +78,31 @@ public class LibraryWindowController
     private Button removeBookBatch;
     @FXML
     private Button orderBook;
+    @FXML
+    private Button refreshAcceptOrderTable;
+    @FXML
+    private Button acceptOrder;
+    @FXML
+    private Button denyOrder;
 
+    @FXML
+    private TableView<AcceptOrderRow> acceptTable;
     @FXML
     private TableView<PersonCardRow> cardTable;
     @FXML
     private TableView<BookOperationCardRow> bookAccountingTable;
     @FXML
     private TableView<BookStorageRow> bookStorageTable;
+    @FXML
+    private TableColumn<AcceptOrderRow, String> bookIDAcceptColumn;
+    @FXML
+    private TableColumn<AcceptOrderRow, String> bookNameAcceptColumn;
+    @FXML
+    private TableColumn<AcceptOrderRow, String> cardIDAccColumn;
+    @FXML
+    private TableColumn<AcceptOrderRow, String> orderDateAccColumn;
+    @FXML
+    private TableColumn<AcceptOrderRow, String> retDateAccColumn;
     @FXML
     private TableColumn<BookStorageRow, String> bookIDStoColumn;
     @FXML
@@ -219,6 +238,7 @@ public class LibraryWindowController
         refreshUsersCardTable();
         refreshBookStorageAccountingTable();
         refreshBookStorageTable();
+        refreshOrderAcceptingTable();
     }
 
     private void hideStorageTabsInMA()
@@ -348,7 +368,7 @@ public class LibraryWindowController
                 return;
             }
 
-            val res = DBCore.callProcedure("ORDER_BOOK(" + bookID + ", " + cardID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'))");
+            val res = DBCore.callProcedure("\"18209_BOLSHIM\".ORDER_BOOK(" + bookID + ", " + cardID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'), 1)", true);
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Успех!", "Книга заказана!", Alert.AlertType.INFORMATION);
             else
@@ -383,7 +403,7 @@ public class LibraryWindowController
                 return;
             }
 
-            val res = DBCore.callProcedure("REMOVE_BOOK_FROM_HALL(" + bookID + ", " + hallID + ", " + bookCount + ", " + (deleteAll ? "1" : "0") + ")");
+            val res = DBCore.callProcedure("\"18209_BOLSHIM\".REMOVE_BOOK_FROM_HALL(" + bookID + ", " + hallID + ", " + bookCount + ", " + (deleteAll ? "1" : "0") + ")", true);
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Успех!", "Книги списаны!", Alert.AlertType.INFORMATION);
             else
@@ -417,7 +437,7 @@ public class LibraryWindowController
                 return;
             }
 
-            val res = DBCore.callProcedure("ADD_BOOK_TO_HALL(" + bookID + ", " + hallID + ", " + bookCount + ")");
+            val res = DBCore.callProcedure("\"18209_BOLSHIM\".ADD_BOOK_TO_HALL(" + bookID + ", " + hallID + ", " + bookCount + ")", true);
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Успех!", "Книги добавлены на склад!", Alert.AlertType.INFORMATION);
             else
@@ -426,6 +446,7 @@ public class LibraryWindowController
 
         refreshBookStorage.setOnAction(e -> refreshBookStorageTable());
         refreshBookStorageAccounting.setOnAction(e -> refreshBookStorageAccountingTable());
+        refreshAcceptOrderTable.setOnAction(e -> refreshOrderAcceptingTable());
 
         closeViolation.setOnAction(e -> {
             val violation = violationData.getText();
@@ -445,7 +466,7 @@ public class LibraryWindowController
                 var date = "TO_DATE('" + arr[3].split(" ")[2] + "', 'yyyy-mm-dd')";
                 val bookRet = bookReturned.isSelected() ? 1 : 0;
 
-                val res = DBCore.callProcedure("CLOSE_VIOLATION(" + bookID + ", " + hallID + ", " + cardID + ", " + date + ", " + bookRet + ")");
+                val res = DBCore.callProcedure("\"18209_BOLSHIM\".CLOSE_VIOLATION(" + bookID + ", " + hallID + ", " + cardID + ", " + date + ", " + bookRet + ")", true);
                 if(res.isEmpty())
                     Dialogs.showDefaultAlert(root, "Успех!", "Задолжность закрыта!", Alert.AlertType.INFORMATION);
                 else
@@ -517,8 +538,8 @@ public class LibraryWindowController
                 return;
             }
 
-            val res = DBCore.callProcedure("OPEN_VIOLATION(" + bookID + ", " + hallID + ", " + cardID + ", '" +
-                    type + "', TO_DATE('" + dateStr + "', 'yyyy-mm-dd'), " + fineInt + ", " + (block == null ? "NULL" : "TO_DATE('" + block.toString() + "', 'yyyy-mm-dd')") + ")");
+            val res = DBCore.callProcedure("\"18209_BOLSHIM\".OPEN_VIOLATION(" + bookID + ", " + hallID + ", " + cardID + ", '" +
+                    type + "', TO_DATE('" + dateStr + "', 'yyyy-mm-dd'), " + fineInt + ", " + (block == null ? "NULL" : "TO_DATE('" + block.toString() + "', 'yyyy-mm-dd')") + ")", true);
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Успех!", "Задолжность добавлена!", Alert.AlertType.INFORMATION);
             else
@@ -559,7 +580,7 @@ public class LibraryWindowController
                 showError(root, "Некорректные значения в полях!");
                 return;
             }
-            val res = DBCore.callProcedure("GET_BOOK(" + bookID + ", " + hallID + ", " + cardID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'))");
+            val res = DBCore.callProcedure("\"18209_BOLSHIM\".GET_BOOK(" + bookID + ", " + hallID + ", " + cardID + ", TO_DATE('" + dateStr + "', 'yyyy-mm-dd'))", true);
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Успех!", "Книга сдана!", Alert.AlertType.INFORMATION);
             else
@@ -592,7 +613,7 @@ public class LibraryWindowController
                 showError(root, "Некорректные значения в полях!");
                 return;
             }
-            val res = DBCore.callProcedure("RETURN_BOOK(" + bookID + ", " + hallID + ", " + cardID + ")");
+            val res = DBCore.callProcedure("\"18209_BOLSHIM\".RETURN_BOOK(" + bookID + ", " + hallID + ", " + cardID + ")", true);
             if(res.isEmpty())
                 Dialogs.showDefaultAlert(root, "Успех!", "Книга возвращена!", Alert.AlertType.INFORMATION);
             else
@@ -640,6 +661,36 @@ public class LibraryWindowController
         bookNameOnAddToStore.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
         bookNameOnRemovingFromStore.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
         bookNameOnOrder.setOnKeyReleased(bookNameOnGiving.getOnKeyReleased());
+
+        denyOrder.setOnAction(e -> {
+            val order = acceptTable.getSelectionModel().getSelectedItem();
+
+            if (order == null)
+            {
+                showError(root, "Нет выделенных заказов для удаления!");
+                return;
+            }
+
+            val result = DBActions.denyOrder(order);
+
+            if (!showError(root, result))
+                refreshOrderAcceptingTable();
+        });
+
+        acceptOrder.setOnAction(e -> {
+            val order = acceptTable.getSelectionModel().getSelectedItem();
+
+            if (order == null)
+            {
+                showError(root, "Нет выделенных заказов для одобрения!");
+                return;
+            }
+
+            val result = DBActions.acceptOrder(order);
+
+            if (!showError(root, result))
+                refreshOrderAcceptingTable();
+        });
 
         refreshTableData.setOnAction(e -> {
             val names = getTableNames(root);
@@ -728,6 +779,22 @@ public class LibraryWindowController
         bookAccTimeOperationColumn.setCellValueFactory(new PropertyValueFactory<>("operationTime"));
         bookAccOperation.setCellValueFactory(new PropertyValueFactory<>("operation"));
         bookAccCountColumn.setCellValueFactory(new PropertyValueFactory<>("count"));
+
+        bookIDAcceptColumn.setCellValueFactory(new PropertyValueFactory<>("bookID"));
+        bookNameAcceptColumn.setCellValueFactory(new PropertyValueFactory<>("bookName"));
+        cardIDAccColumn.setCellValueFactory(new PropertyValueFactory<>("cardID"));
+        orderDateAccColumn.setCellValueFactory(new PropertyValueFactory<>("orderDate"));
+        retDateAccColumn.setCellValueFactory(new PropertyValueFactory<>("returnedOrder"));
+    }
+
+    private void refreshOrderAcceptingTable()
+    {
+        val data = GUIUtils.getNotAcceptedOrderRows(root);
+
+        if(data == null)
+            return;
+
+        acceptTable.setItems(data);
     }
 
     private void refreshBookStorageAccountingTable()

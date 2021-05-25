@@ -43,13 +43,13 @@ BEGIN
 	select HALL_TYPE_ID into hallt from LIBRARY_HALLS where ID = HALL_ID_V;
 
 	if hallt = 'intercol' then
-		select count(*) into cnt from MA_ORDER mao where mao.BOOK_ID = BOOK_ID_V and mao.CARD_ID = CARD_ID_V and mao.ORDER_DATE <= CURRENT_DATE and CURRENT_DATE <= mao.RETURN_DATE and mao.TAKEN is NULL;
+		select count(*) into cnt from MA_ORDER mao where mao.BOOK_ID = BOOK_ID_V and mao.CARD_ID = CARD_ID_V and mao.ORDER_DATE <= CURRENT_DATE and CURRENT_DATE <= mao.RETURN_DATE and mao.TAKEN is NULL and mao.ACCEPTED_BY_ADMIN = 1;
 
 		if cnt = 0 then
-			RAISE_APPLICATION_ERROR(-20010, 'This book was not ordered!');
+			RAISE_APPLICATION_ERROR(-20010, 'This book was not ordered or order not accepted!');
 		end if;
 
-		update MA_ORDER mao SET taken = CURRENT_DATE where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V and mao.ORDER_DATE <= CURRENT_DATE and CURRENT_DATE <= mao.RETURN_DATE and mao.TAKEN is NULL and ROWNUM = 1;
+		update MA_ORDER mao SET taken = CURRENT_DATE where BOOK_ID_V = mao.BOOK_ID and mao.CARD_ID = CARD_ID_V and mao.ORDER_DATE <= CURRENT_DATE and CURRENT_DATE <= mao.RETURN_DATE and mao.TAKEN is NULL and mao.ACCEPTED_BY_ADMIN = 1 and ROWNUM = 1;
 	elsif hallt = 'abonement' then
 		select CAN_TAKE_FOR_TIME into rules from READER_CARD rc, HUMAN h, READER_TYPE rt
                                 where CARD_ID_V = rc.ID and h.ID = rc.HUMAN_ID and h.TYPE_ID = rt.ID;
@@ -237,11 +237,11 @@ END;
 
 ------------------------------------------------------------------------------------------------
 
-CREATE OR REPLACE procedure order_book(BOOK_ID_V IN NUMBER, CARD_ID_V IN NUMBER, RETURN_DATE_V IN DATE)
+CREATE OR REPLACE procedure order_book(BOOK_ID_V IN NUMBER, CARD_ID_V IN NUMBER, RETURN_DATE_V IN DATE, ACCEPTED IN NUMBER)
 IS
 	cnt NUMBER;
 BEGIN
-	insert into MA_ORDER values (BOOK_ID_V, CARD_ID_V, CURRENT_DATE, RETURN_DATE_V, NULL, 0);
+	insert into MA_ORDER values (BOOK_ID_V, CARD_ID_V, CURRENT_DATE, RETURN_DATE_V, NULL, 0, ACCEPTED);
 
 	select COUNT(*) into cnt from HALL_STORAGE where BOOK_ID = BOOK_ID_V and HALL_ID = 3;
 
