@@ -12,7 +12,6 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -297,9 +296,63 @@
                            </content>
                       </Tab>
                       <Tab text="Статистика">
-                        <content>
-                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                        </content>
+                           <content>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <HBox prefHeight="32.0" prefWidth="603.0">
+                                       <children>
+                                          <Label prefHeight="29.0" prefWidth="268.0" text="Количество пользователей библиотеки:">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="countCards" editable="false" prefWidth="333.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox prefHeight="32.0" prefWidth="603.0">
+                                       <children>
+                                          <Label prefHeight="29.0" prefWidth="268.0" text="Количество заказов:">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="countOrders" editable="false" prefWidth="333.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox prefHeight="32.0" prefWidth="603.0">
+                                       <children>
+                                          <Label prefHeight="29.0" prefWidth="268.0" text="Количество незакрытых нарушений:">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="countViolations" editable="false" prefWidth="333.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox prefHeight="32.0" prefWidth="603.0">
+                                       <children>
+                                          <Label prefHeight="29.0" prefWidth="268.0" text="Самая популярная книга:">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="popularBook" editable="false" prefWidth="333.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox prefHeight="32.0" prefWidth="603.0">
+                                       <children>
+                                          <Label prefHeight="29.0" prefWidth="268.0" text="Самый активный читатель:">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="popularReader" editable="false" prefWidth="333.0" />
+                                       </children>
+                                    </HBox>
+                                    <Button fx:id="refreshStatisticsBtn" mnemonicParsing="false" prefWidth="608.0" text="Обновить" />
+                                 </children>
+                              </VBox>
+                           </content>
                       </Tab>
                     </tabs>
                   </TabPane>

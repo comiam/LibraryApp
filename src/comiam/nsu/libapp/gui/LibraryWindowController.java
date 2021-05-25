@@ -84,6 +84,8 @@ public class LibraryWindowController
     private Button acceptOrder;
     @FXML
     private Button denyOrder;
+    @FXML
+    private Button refreshStatisticsBtn;
 
     @FXML
     private TableView<AcceptOrderRow> acceptTable;
@@ -182,6 +184,16 @@ public class LibraryWindowController
     @FXML
     private TextField bookRemoveCount;
     @FXML
+    private TextField countCards;
+    @FXML
+    private TextField countOrders;
+    @FXML
+    private TextField countViolations;
+    @FXML
+    private TextField popularBook;
+    @FXML
+    private TextField popularReader;
+    @FXML
     private CheckBox deleteAllBooks;
     @FXML
     private CheckBox bookReturned;
@@ -239,6 +251,7 @@ public class LibraryWindowController
         refreshBookStorageAccountingTable();
         refreshBookStorageTable();
         refreshOrderAcceptingTable();
+        refreshStatistics();
     }
 
     private void hideStorageTabsInMA()
@@ -754,6 +767,21 @@ public class LibraryWindowController
             }
             WindowLoader.loadEnterReaderOneWindow(this, true, user.getHumanID(), user.getType());
         });
+
+        refreshStatisticsBtn.setOnAction(e -> refreshStatistics());
+    }
+
+    private void refreshStatistics()
+    {
+        var res = DBActions.getStatistics();
+        if(showError(root, res.getFirst()))
+            return;
+
+        countCards.setText(res.getSecond()[0]);
+        countOrders.setText(res.getSecond()[1]);
+        countViolations.setText(res.getSecond()[2]);
+        popularBook.setText(res.getSecond()[3]);
+        popularReader.setText(res.getSecond()[4]);
     }
 
     private void setupColumns()

@@ -12,6 +12,73 @@ import static comiam.nsu.libapp.db.core.DBCore.*;
 
 public class DBActions
 {
+    public static Pair<String, String[]> getStatistics()
+    {
+        var res = makeRequest("select count(*) from \"18209_BOLSHIM\".READER_CARD", true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Не получилось собрать статистику: " + res.getErrorMsg(), null);
+        String[] data = new String[5];
+        String error;
+        if(!(error = readSingleValueFromResponse(res, data, 0)).isEmpty())
+            return new Pair<>(error, null);
+
+        res = makeRequest("select count(*) from \"18209_BOLSHIM\".MA_ORDER", true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Не получилось собрать статистику: " + res.getErrorMsg(), null);
+        if(!(error = readSingleValueFromResponse(res, data, 1)).isEmpty())
+            return new Pair<>(error, null);
+        res.closeAll();
+
+        res = makeRequest("select count(*) from \"18209_BOLSHIM\".VIOLATIONS where VIOLATIONS.IS_CLOSED = 0", true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Не получилось собрать статистику: " + res.getErrorMsg(), null);
+        if(!(error = readSingleValueFromResponse(res, data, 2)).isEmpty())
+            return new Pair<>(error, null);
+        res.closeAll();
+
+        res = makeRequest("select NAME from \"18209_BOLSHIM\".ACCEPTING_RETURNING_BOOKS\n" +
+                "    inner join \"18209_BOLSHIM\".BOOKS B on B.ID = ACCEPTING_RETURNING_BOOKS.BOOK_ID\n" +
+                "    where ROWNUM = 1\n" +
+                "    group by BOOK_ID, NAME\n" +
+                "    order by COUNT(BOOK_ID) desc", true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Не получилось собрать статистику: " + res.getErrorMsg(), null);
+        if(!(error = readSingleValueFromResponse(res, data, 3)).isEmpty())
+            return new Pair<>(error, null);
+        res.closeAll();
+
+        res = makeRequest("select CARD_ID || ' ' || SURNAME || ' ' || FIRST_NAME || ' ' || PATRONYMIC from \"18209_BOLSHIM\".ACCEPTING_RETURNING_BOOKS\n" +
+                "    inner join \"18209_BOLSHIM\".READER_CARD RC on ACCEPTING_RETURNING_BOOKS.CARD_ID = RC.ID\n" +
+                "    inner join \"18209_BOLSHIM\".HUMAN H on H.ID = RC.HUMAN_ID\n" +
+                "    where ROWNUM = 1\n" +
+                "    group by CARD_ID, SURNAME, FIRST_NAME, PATRONYMIC\n" +
+                "    order by COUNT(CARD_ID)", true, false);
+        if(isBadResponse(res))
+            return new Pair<>("Не получилось собрать статистику: " + res.getErrorMsg(), null);
+        if(!(error = readSingleValueFromResponse(res, data, 4)).isEmpty())
+            return new Pair<>(error, null);
+        res.closeAll();
+
+        return new Pair<>("", data);
+    }
+
+    private static String readSingleValueFromResponse(Response res, String[] data, int index)
+    {
+        try
+        {
+            val rs = res.getSet();
+
+            if(rs.next())
+                data[index] = rs.getString(1);
+        }catch (SQLException e) {
+            return e.getMessage();
+        } finally
+        {
+            res.closeAll();
+        }
+        return "";
+    }
+
     public static String acceptOrder(AcceptOrderRow order)
     {
         var res = makeRequest("update \"18209_BOLSHIM\".MA_ORDER set ACCEPTED_BY_ADMIN = 1 where BOOK_ID = " + order.getBookID() +
@@ -159,7 +226,7 @@ public class DBActions
         if(isBadResponse(res))
             return "Не получилось обновить пользователя: " + res.getErrorMsg();
 
-        res = makeRequest("update \"18209_BOLSHIM\".PASSWORDS set PASSW = '" + password + "' where ID = " + userID, true, true);
+        res = makeRequest("ALTER USER \"18209_B_" + userID + "\" IDENTIFIED BY \"" + password + "\"", true, true);
         if(isBadResponse(res))
             return "Не получилось обновить пользователя: " + res.getErrorMsg();
 
@@ -435,7 +502,7 @@ public class DBActions
 
     public static Pair<String, String[]> getRowInfoFrom(String comparableValue, String compareColumn, String table)
     {
-        var res = makeRequest("select * from " + table + " where " + compareColumn + " = " + comparableValue, true, false);
+        var res = makeRequest("select * from \"18209_BOLSHIM\"." + table + " where " + compareColumn + " = " + comparableValue, true, false);
         if(isBadResponse(res))
             return new Pair<>("Ошибка при получении строк таблицы: " + res.getErrorMsg(), null);
 

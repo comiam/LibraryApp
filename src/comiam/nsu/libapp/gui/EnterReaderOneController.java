@@ -103,6 +103,7 @@ public class EnterReaderOneController
                     break;
                 case "assistant":
                     WindowLoader.loadAssistantFormWindow(res.getSecond(), isEditingUser);
+                    break;
                 default:
                     Dialogs.showDefaultAlert(root, "Успех!", "Абитуриент успешно обновлён!", Alert.AlertType.INFORMATION);
                     break;
